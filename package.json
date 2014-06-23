@@ -1,0 +1,21 @@
+{
+  "name": "curryjs",
+  "version": "0.0.0",
+  "description": "A Functional Programming Library for JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "FP"
+  ],
+  "author": "Patrik Hedman",
+  "license": "MIT",
+  "devDependencies": {
+    "watchy": "~0.4.4",
+    "sweet.js": "~0.6.0",
+    "buster": "~0.7.13",
+    "sparkler": "~0.3.0",
+    "adt-simple": "~0.1.3"
+  }
+}
