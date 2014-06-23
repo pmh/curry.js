@@ -26,4 +26,17 @@ describe ("Curry.Core", function () {
       expect(mod2(3)).toEqual(1);
     });
   });
+
+  describe ("compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)", function () {
+
+    it ("returns the composition of multiple functions", function () {
+      var split  = Core.curry (function (sep, s ) { return s.split(sep);   })
+        , map    = Core.curry (function (f, xs  ) { return xs.map(f);      })
+        , upcase = Core.curry (function (s      ) { return s.toUpperCase() })
+        , join   = Core.curry (function (sep, xs) { return xs.join(sep);   });
+
+      expect(Core.compose(join("-"), map(upcase), split(" "))("foo bar baz")).
+        toEqual("FOO-BAR-BAZ");
+    });
+  })
 });
