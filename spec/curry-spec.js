@@ -25,6 +25,12 @@ describe ("Curry.Core", function () {
       expect(mod2(2)).toEqual(0);
       expect(mod2(3)).toEqual(1);
     });
+
+    it ("is added to the Function prototype", function () {
+      var add = (function (a, b) { return a + b; }).curry();
+
+      expect(add(2)(4)).toEqual(6);
+    });
   });
 
   describe ("compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)", function () {
