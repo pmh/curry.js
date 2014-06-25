@@ -1273,7 +1273,6 @@ macro fun {
         return #{ fun ($params (,) ...) = { return $body } }
     }
 }
-export fun
 
 macro (:=) {
   rule infix { $lhs:ident | $expr } => {
@@ -1289,4 +1288,11 @@ macro (:=) {
     $(var $lhs = $expr[i++]) ...
   }
 }
+
+operator (..)  9  right { $l, $r } => #{ (function (x) { return $l($r(x)) })  }
+operator ($)   1  right { $l, $r } => #{ $l($r)                               }
+
+export fun
 export (:=)
+export (..)
+export ($)
