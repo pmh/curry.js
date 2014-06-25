@@ -1274,3 +1274,19 @@ macro fun {
     }
 }
 export fun
+
+macro (:=) {
+  rule infix { $lhs:ident | $expr } => {
+    var $lhs = $expr
+  }
+  
+  rule infix { { $lhs:ident (,) ... } | $expr } => {
+    $(var $lhs = $expr.$lhs;) ...
+  }
+  
+  rule infix { [ $lhs:ident (,) ... ] | $expr } => {
+    var i = 0
+    $(var $lhs = $expr[i++]) ...
+  }
+}
+export (:=)
