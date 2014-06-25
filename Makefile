@@ -14,7 +14,7 @@ compile:
 	@mkdir -p src/lib
 	@mkdir -p src/spec
 	@sjs --sourcemap -m sparkler/macros -m adt-simple/macros -m ./macros lib/curry.js -o src/lib/curry.js
-	@sjs --sourcemap -m sparkler/macros -m adt-simple/macros -m ./macros -m ./spec/spec-helpers spec/curry-spec.js -o src/spec/curry-spec.js
+	@sjs -m sparkler/macros -m adt-simple/macros -m ./macros -m ./spec/spec-helpers.js spec/curry-spec.js -o src/spec/curry-spec.js
 
 test: src/spec/curry-spec.js
 	@buster-test

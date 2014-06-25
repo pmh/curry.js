@@ -6,43 +6,38 @@ buster.spec.expose();
 var C    = require("../lib/curry")
   , Core = C.Core;
 
-describe ("Curry.Core", function () {
+describe "Curry.Core" {
 
-  describe ("curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))", function () {
+  describe "curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))" {
 
-    it ("returns a new function that can be partially applied", function () {
-      var addMany = Core.curry(function (a, b, c, d) { return a + b + c + d });
+    it "should return a curried version of the function" {
+      var addMany = Core.curry(function (a, b, c, d) { return a + b + c + d })
+        , nums    = Core.curry(function (a, b)       { return [a, b]        });
+      
+      test "single argument application" { addMany(1)(2)(3)(4) === 10     }
+      test "multi argument application"  { addMany(1, 2)(3, 4) === 10     }
+      test "full application"            { addMany(1, 2, 3, 4) === 10     }
+      test "flipped application"         { nums(Core.__, 2)(1) =>= [1, 2] }
+    };
 
-      expect(addMany(1)(2)(3)(4)).toEqual(10);
-      expect(addMany(1, 2)(3, 4)).toEqual(10);
-      expect(addMany(1, 2, 3, 4)).toEqual(10);
-    });
-
-    it ("returns a new function that can be partially applied with argument holes", function () {
-      var mod  = Core.curry(function (a, b) { return a % b });
-      var mod2 = mod(Core.__, 2);
-
-      expect(mod2(2)).toEqual(0);
-      expect(mod2(3)).toEqual(1);
-    });
-
-    it ("is added to the Function prototype", function () {
+    it "should be installed on Function.prototype" {
       var add = (function (a, b) { return a + b; }).curry();
 
-      expect(add(2)(4)).toEqual(6);
-    });
-  });
+      test "single argument application" { add(2)(4) === (6) }
+    };
+  }
 
-  describe ("compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)", function () {
+  describe "compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)" {
 
-    it ("returns the composition of multiple functions", function () {
+    it "should compose multiple functions" {
       var split  = Core.curry (function (sep, s ) { return s.split(sep);   })
         , map    = Core.curry (function (f, xs  ) { return xs.map(f);      })
         , upcase = Core.curry (function (s      ) { return s.toUpperCase() })
         , join   = Core.curry (function (sep, xs) { return xs.join(sep);   });
 
-      expect(Core.compose(join("-"), map(upcase), split(" "))("foo bar baz")).
-        toEqual("FOO-BAR-BAZ");
-    });
-  })
-});
+      test "function composition" {
+        Core.compose(join("-"), map(upcase), split(" "))("foo bar baz") === "FOO-BAR-BAZ"
+      }
+    };
+  }
+}
