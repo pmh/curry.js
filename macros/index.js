@@ -1,14 +1,13 @@
 macro fun {
-  case {_ ($params ...) { $body ... $last:expr } } => {
-    return #{
-      (function ($params ...) {
-        $body ...
-        return $last
-      }).curry()
-    }
+  rule { $name:ident ($params:ident (,) ...) = { $body ... $last:expr } } => {
+    var $name = (function $name ($params (,) ...) {
+      $body ...
+      return $last
+    }).curry()
   }
-  case {_ ($params ...) $body:expr } => {
-    return #{ fun ($params ...) { $body } }
+
+  rule { $name:ident ($params:ident (,) ...) = $body:expr } => {
+    fun $name ($params (,) ...) = { $body }
   }
 }
 
