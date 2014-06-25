@@ -1,18 +1,18 @@
 (function () {
     'use strict';
-    var __slice$2076 = [].slice;
+    var __slice$2080 = [].slice;
     /* CurryJS.Core */
-    var __$2078 = function noop() {
+    var __$2082 = function noop() {
     };
-    var extendNative$2080 = function (native$2088, prop$2089, f$2090) {
-        return Object.defineProperty(native$2088, prop$2089, { value: f$2090 });
+    var extendNative$2084 = function (native$2092, prop$2093, f$2094) {
+        return Object.defineProperty(native$2092, prop$2093, { value: f$2094 });
     };
-    var withMeta$2082 = function (f$2091, meta$2092) {
-        var keys$2093 = Object.keys(meta$2092);
-        keys$2093.forEach(function (name$2095) {
-            Object.defineProperty(f$2091, '__' + name$2095, { value: meta$2092[name$2095] });
+    var withMeta$2086 = function (f$2095, meta$2096) {
+        var keys$2097 = Object.keys(meta$2096);
+        keys$2097.forEach(function (name$2099) {
+            Object.defineProperty(f$2095, '__' + name$2099, { value: meta$2096[name$2099] });
         });
-        return f$2091;
+        return f$2095;
     };
     /*
   * curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))
@@ -32,38 +32,38 @@
   *   mod2(2)     //=> 0
   *   mod2(3)     //=> 1
   */
-    var curry$2084 = function (f$2096) {
-        var arity$2097 = typeof f$2096.__arity === 'undefined' ? f$2096.length : f$2096.__arity, name$2098 = f$2096.name || f$2096.__name;
-        var curriedFn$2100 = withMeta$2082(function () {
-                var args$2102 = [].slice.call(arguments, 0, arity$2097), realArity$2103 = args$2102.filter(function (x$2105) {
-                        return x$2105 !== __$2078;
-                    }).length, self$2104 = this;
-                if (realArity$2103 >= arity$2097)
-                    return f$2096.apply(self$2104, arguments);
+    var curry$2088 = function (f$2100) {
+        var arity$2101 = typeof f$2100.__arity === 'undefined' ? f$2100.length : f$2100.__arity, name$2102 = f$2100.name || f$2100.__name;
+        var curriedFn$2104 = withMeta$2086(function () {
+                var args$2106 = [].slice.call(arguments, 0, arity$2101), realArity$2107 = args$2106.filter(function (x$2109) {
+                        return x$2109 !== __$2082;
+                    }).length, self$2108 = this;
+                if (realArity$2107 >= arity$2101)
+                    return f$2100.apply(self$2108, arguments);
                 else {
-                    var g$2107 = withMeta$2082(function () {
-                            var partialArgs$2108 = [].slice.call(arguments), newArgs$2109 = [];
-                            for (var i$2110 = 0; i$2110 < args$2102.length; i$2110++)
-                                newArgs$2109[i$2110] = args$2102[i$2110] === __$2078 ? partialArgs$2108.length === 0 ? undefined : partialArgs$2108.shift() : args$2102[i$2110];
-                            return curriedFn$2100.apply(self$2104, newArgs$2109.concat(partialArgs$2108));
+                    var g$2111 = withMeta$2086(function () {
+                            var partialArgs$2112 = [].slice.call(arguments), newArgs$2113 = [];
+                            for (var i$2114 = 0; i$2114 < args$2106.length; i$2114++)
+                                newArgs$2113[i$2114] = args$2106[i$2114] === __$2082 ? partialArgs$2112.length === 0 ? undefined : partialArgs$2112.shift() : args$2106[i$2114];
+                            return curriedFn$2104.apply(self$2108, newArgs$2113.concat(partialArgs$2112));
                         }, {
-                            name: name$2098,
-                            arity: arity$2097 - realArity$2103,
+                            name: name$2102,
+                            arity: arity$2101 - realArity$2107,
                             curried: true
                         });
-                    g$2107.toString = curriedFn$2100.toString.bind(curriedFn$2100);
-                    return g$2107;
+                    g$2111.toString = curriedFn$2104.toString.bind(curriedFn$2104);
+                    return g$2111;
                 }
             }, {
-                name: name$2098,
-                arity: arity$2097,
+                name: name$2102,
+                arity: arity$2101,
                 curried: true
             });
-        curriedFn$2100.toString = f$2096.toString.bind(f$2096);
-        return curriedFn$2100;
+        curriedFn$2104.toString = f$2100.toString.bind(f$2100);
+        return curriedFn$2104;
     };
-    extendNative$2080(Function.prototype, 'curry', function () {
-        return curry$2084(this);
+    extendNative$2084(Function.prototype, 'curry', function () {
+        return curry$2088(this);
     });
     /*
   * compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)
@@ -84,19 +84,20 @@
   * odd  (1) => true
   *
   */
-    var compose$2087 = function () {
-        var fns$2111 = __slice$2076.call(arguments), self$2112 = this;
-        return fns$2111.reduce(function (f$2114, g$2115) {
+    var compose$2091 = function () {
+        var fns$2115 = __slice$2080.call(arguments), self$2116 = this;
+        return fns$2115.reduce(function (f$2118, g$2119) {
             return function () {
-                return f$2114.call(self$2112, g$2115.apply(self$2112, arguments));
+                return f$2118.call(self$2116, g$2119.apply(self$2116, arguments));
             };
         });
     };
     module.exports = {
         Core: {
-            __: __$2078,
-            curry: curry$2084,
-            compose: compose$2087
+            __: __$2082,
+            curry: curry$2088,
+            compose: compose$2091
         }
     };
 }());
+//# sourceMappingURL=curry.js.map
