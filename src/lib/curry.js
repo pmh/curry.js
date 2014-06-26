@@ -1,18 +1,19 @@
 (function () {
     'use strict';
-    var __slice$2080 = [].slice;
+    var Base$2144 = require('./adt-derivers').Base;
+    var __slice$2146 = [].slice;
     /* CurryJS.Core */
-    var __$2082 = function noop() {
+    var __$2147 = function noop() {
     };
-    var extendNative$2084 = function (native$2092, prop$2093, f$2094) {
-        return Object.defineProperty(native$2092, prop$2093, { value: f$2094 });
+    var extendNative$2148 = function (native$2164, prop$2165, f$2166) {
+        return Object.defineProperty(native$2164, prop$2165, { value: f$2166 });
     };
-    var withMeta$2086 = function (f$2095, meta$2096) {
-        var keys$2097 = Object.keys(meta$2096);
-        keys$2097.forEach(function (name$2099) {
-            Object.defineProperty(f$2095, '__' + name$2099, { value: meta$2096[name$2099] });
+    var withMeta$2149 = function (f$2167, meta$2168) {
+        var keys$2169 = Object.keys(meta$2168);
+        keys$2169.forEach(function (name$2170) {
+            Object.defineProperty(f$2167, '__' + name$2170, { value: meta$2168[name$2170] });
         });
-        return f$2095;
+        return f$2167;
     };
     /*
   * curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))
@@ -32,38 +33,38 @@
   *   mod2(2)     //=> 0
   *   mod2(3)     //=> 1
   */
-    var curry$2088 = function (f$2100) {
-        var arity$2101 = typeof f$2100.__arity === 'undefined' ? f$2100.length : f$2100.__arity, name$2102 = f$2100.name || f$2100.__name;
-        var curriedFn$2104 = withMeta$2086(function () {
-                var args$2106 = [].slice.call(arguments, 0, arity$2101), realArity$2107 = args$2106.filter(function (x$2109) {
-                        return x$2109 !== __$2082;
-                    }).length, self$2108 = this;
-                if (realArity$2107 >= arity$2101)
-                    return f$2100.apply(self$2108, arguments);
+    var curry$2150 = function (f$2171, n$2172) {
+        var arity$2173 = typeof n$2172 !== 'undefined' ? n$2172 : typeof f$2171.__arity !== 'undefined' ? f$2171.__arity : f$2171.length, name$2174 = f$2171.name || f$2171.__name;
+        var curriedFn$2175 = withMeta$2149(function () {
+                var args$2176 = [].slice.call(arguments, 0, arity$2173), realArity$2177 = args$2176.filter(function (x$2179) {
+                        return x$2179 !== __$2147;
+                    }).length, self$2178 = this;
+                if (realArity$2177 >= arity$2173)
+                    return f$2171.apply(self$2178, arguments);
                 else {
-                    var g$2111 = withMeta$2086(function () {
-                            var partialArgs$2112 = [].slice.call(arguments), newArgs$2113 = [];
-                            for (var i$2114 = 0; i$2114 < args$2106.length; i$2114++)
-                                newArgs$2113[i$2114] = args$2106[i$2114] === __$2082 ? partialArgs$2112.length === 0 ? undefined : partialArgs$2112.shift() : args$2106[i$2114];
-                            return curriedFn$2104.apply(self$2108, newArgs$2113.concat(partialArgs$2112));
+                    var g$2180 = withMeta$2149(function () {
+                            var partialArgs$2181 = [].slice.call(arguments), newArgs$2182 = [];
+                            for (var i$2183 = 0; i$2183 < args$2176.length; i$2183++)
+                                newArgs$2182[i$2183] = args$2176[i$2183] === __$2147 ? partialArgs$2181.length === 0 ? undefined : partialArgs$2181.shift() : args$2176[i$2183];
+                            return curriedFn$2175.apply(self$2178, newArgs$2182.concat(partialArgs$2181));
                         }, {
-                            name: name$2102,
-                            arity: arity$2101 - realArity$2107,
+                            name: name$2174,
+                            arity: arity$2173 - realArity$2177,
                             curried: true
                         });
-                    g$2111.toString = curriedFn$2104.toString.bind(curriedFn$2104);
-                    return g$2111;
+                    g$2180.toString = curriedFn$2175.toString.bind(curriedFn$2175);
+                    return g$2180;
                 }
             }, {
-                name: name$2102,
-                arity: arity$2101,
+                name: name$2174,
+                arity: arity$2173,
                 curried: true
             });
-        curriedFn$2104.toString = f$2100.toString.bind(f$2100);
-        return curriedFn$2104;
+        curriedFn$2175.toString = f$2171.toString.bind(f$2171);
+        return curriedFn$2175;
     };
-    extendNative$2084(Function.prototype, 'curry', function () {
-        return curry$2088(this);
+    extendNative$2148(Function.prototype, 'curry', function (n$2184) {
+        return curry$2150(this, n$2184);
     });
     /*
   * compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)
@@ -84,19 +85,64 @@
   * odd  (1) => true
   *
   */
-    var compose$2091 = function () {
-        var fns$2115 = __slice$2080.call(arguments), self$2116 = this;
-        return fns$2115.reduce(function (f$2118, g$2119) {
+    var compose$2151 = function () {
+        var fns$2185 = __slice$2146.call(arguments), self$2186 = this;
+        return fns$2185.reduce(function (f$2187, g$2188) {
             return function () {
-                return f$2118.call(self$2116, g$2119.apply(self$2116, arguments));
+                return f$2187.call(self$2186, g$2188.apply(self$2186, arguments));
             };
         });
     };
+    // CurryJS.Data.Collection
+    /*
+  * foldl :: (a -> b -> a) -> a -> [b] -> a
+  */
+    function foldl$2154(f$2189, acc$2190, xs$2191) {
+        return function $_name(f$2192, acc$2193, xs$2194) {
+            return xs$2194.reduce(f$2192, acc$2193);
+        }.curry().apply(null, arguments);
+    }
+    ;
+    /*
+  * foldl1 :: (a -> a -> a) -> [a] -> a
+  */
+    function foldl1$2157(f$2195, xs$2196) {
+        return function $_name(f$2197, xs$2198) {
+            return xs$2198.reduce(f$2197);
+        }.curry().apply(null, arguments);
+    }
+    ;
+    /*
+  * foldr :: (a -> b -> b) -> b -> [a] -> b
+  */
+    function foldr$2160(f$2199, acc$2200, xs$2201) {
+        return function $_name(f$2202, acc$2203, xs$2204) {
+            return xs$2204.reduceRight(f$2202, acc$2203);
+        }.curry().apply(null, arguments);
+    }
+    ;
+    /*
+  * foldr1 :: (a -> a -> a) -> [a] -> a
+  */
+    function foldr1$2163(f$2205, xs$2206) {
+        return function $_name(f$2207, xs$2208) {
+            return xs$2208.reduceRight(f$2207);
+        }.curry().apply(null, arguments);
+    }
+    ;
     module.exports = {
         Core: {
-            __: __$2082,
-            curry: curry$2088,
-            compose: compose$2091
+            __: __$2147,
+            curry: curry$2150,
+            compose: compose$2151
+        },
+        Data: {
+            Collection: {
+                foldl: foldl$2154,
+                foldl1: foldl1$2157,
+                foldr: foldr$2160,
+                foldr1: foldr1$2163
+            }
         }
     };
 }());
