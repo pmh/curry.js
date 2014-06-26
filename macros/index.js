@@ -1240,8 +1240,6 @@ let matcher = macro {
 
 macro fun {
     case { _ $name:ident ($params:ident (,) ...) = { $body ... } } => {
-        letstx $name_str = [makeValue(unwrapSyntax(#{$name}[0]), #{here})];
-
         return #{
             function $name ($params (,) ...) {
                 return (function $_name ($params (,) ...) { $body ... }).curry().apply(null, arguments);
@@ -1275,15 +1273,15 @@ macro fun {
 }
 
 macro (:=) {
-  rule infix { $lhs:ident | $expr } => {
+  rule infix { $lhs:ident | $expr:expr } => {
     var $lhs = $expr
   }
   
-  rule infix { { $lhs:ident (,) ... } | $expr } => {
+  rule infix { { $lhs:ident (,) ... } | $expr:expr } => {
     $(var $lhs = $expr.$lhs;) ...
   }
   
-  rule infix { [ $lhs:ident (,) ... ] | $expr } => {
+  rule infix { [ $lhs:ident (,) ... ] | $expr:expr } => {
     var i = 0
     $(var $lhs = $expr[i++]) ...
   }
