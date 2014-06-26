@@ -1,8 +1,3 @@
-var buster = require("buster")
-  , expect = buster.expect;
-
-buster.spec.expose();
-
 var C = require("../lib/curry");
 
 describe "CurryJS" {
@@ -80,6 +75,20 @@ describe "CurryJS.Data.Collection" {
       test "concat" { 
         Collection.foldr1(fun (acc, x) = acc.concat([x]), [[6], [4], [2], []])
           =>= [[2], [4], [6]] 
+      }
+    }
+  }
+}
+
+describe "CurryJS.Control.Functor" {
+  var Functor = C.Control.Functor;
+
+  describe "map :: Functor f => (a -> b) -> f a -> f b" {
+    it "should delegate to the functor" {
+      var obj = { map: fun (f) = f(1) }
+
+      test "map over functor" {
+        Functor.map(fun (x) = x + 2, obj) === 3
       }
     }
   }
