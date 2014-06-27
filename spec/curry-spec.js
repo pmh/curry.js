@@ -106,3 +106,17 @@ describe "CurryJS.Control.Applicative" {
     }
   }
 }
+
+describe "CurryJS.Control.Monad" {
+  { chain } := C.Control.Monad;
+
+  describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
+    it "should delegate to the monad instance" {
+      obj := { chain: fun (f) = f(1) }
+
+      test "chain monadic values" {
+        chain(obj, fun (x) = x + 2) === 3
+      }
+    }
+  }
+}
