@@ -45,6 +45,14 @@ describe "CurryJS" {
   }
 }
 
+describe "CurryJS.Predicates" {
+  { not } := C.Predicates;
+
+  describe "not :: a -> Bool" {
+    test "negation" { not(true) === false && not(false) === true }
+  }
+}
+
 describe "CurryJS.Data.Collection" {
   {foldl, foldl1, foldr, foldr1} := C.Data.Collection;
 
