@@ -92,3 +92,17 @@ describe "CurryJS.Control.Functor" {
     }
   }
 }
+
+describe "CurryJS.Control.Applicative" {
+  { ap } := C.Control.Applicative;
+
+  describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
+    it "should delegate to the applicative" {
+      obj := { ap: fun (f) = f(1) }
+
+      test "apply over functor" {
+        ap(fun (x) = x + 2, obj) === 3
+      }
+    }
+  }
+}

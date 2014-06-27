@@ -1,82 +1,82 @@
 var C$2247 = require('../lib/curry');
 require('buster').spec.describe('CurryJS', function () {
-    var __$2252 = C$2247.Core.__;
-    var curry$2253 = C$2247.Core.curry;
-    var compose$2254 = C$2247.Core.compose;
+    var __$2253 = C$2247.Core.__;
+    var curry$2254 = C$2247.Core.curry;
+    var compose$2255 = C$2247.Core.compose;
     ;
     require('buster').spec.describe('curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))', function () {
         ;
         require('buster').spec.it('should return a curried version of the function', function () {
-            var addMany$2261 = curry$2253(function (a$2268, b$2269, c$2270, d$2271) {
-                    return a$2268 + b$2269 + c$2270 + d$2271;
+            var addMany$2262 = curry$2254(function (a$2269, b$2270, c$2271, d$2272) {
+                    return a$2269 + b$2270 + c$2271 + d$2272;
                 });
-            var nums$2263 = curry$2253(function (a$2272, b$2273) {
+            var nums$2264 = curry$2254(function (a$2273, b$2274) {
                     return [
-                        a$2272,
-                        b$2273
+                        a$2273,
+                        b$2274
                     ];
                 });
             ;
-            require('buster').assert(addMany$2261(1)(2)(3)(4) === 10, 'single argument application');
-            require('buster').assert(addMany$2261(1, 2)(3, 4) === 10, 'multi argument application');
-            require('buster').assert(addMany$2261(1, 2, 3, 4) === 10, 'full application');
-            require('buster').assert.equals(nums$2263(__$2252, 2)(1), [
+            require('buster').assert(addMany$2262(1)(2)(3)(4) === 10, 'single argument application');
+            require('buster').assert(addMany$2262(1, 2)(3, 4) === 10, 'multi argument application');
+            require('buster').assert(addMany$2262(1, 2, 3, 4) === 10, 'full application');
+            require('buster').assert.equals(nums$2264(__$2253, 2)(1), [
                 1,
                 2
             ], 'flipped application');
         });
         ;
         require('buster').spec.it('should accept an optional arity argument', function () {
-            var curried$2275 = curry$2253(function () {
+            var curried$2276 = curry$2254(function () {
                     return [].slice.call(arguments);
                 }, 3);
             ;
-            require('buster').assert.equals(curried$2275(1)(2)(3), [
+            require('buster').assert.equals(curried$2276(1)(2)(3), [
                 1,
                 2,
                 3
             ], 'partial application');
         });
         require('buster').spec.it('should be installed on Function.prototype', function () {
-            var add$2278 = function (a$2280, b$2281) {
-                    return a$2280 + b$2281;
+            var add$2279 = function (a$2281, b$2282) {
+                    return a$2281 + b$2282;
                 }.curry();
             ;
-            require('buster').assert(add$2278(2)(4) === 6, 'single argument application');
+            require('buster').assert(add$2279(2)(4) === 6, 'single argument application');
         });
     });
     require('buster').spec.describe('compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)', function () {
         ;
         require('buster').spec.it('should compose multiple functions', function () {
-            var split$2284 = curry$2253(function (sep$2292, s$2293) {
-                    return s$2293.split(sep$2292);
+            var split$2285 = curry$2254(function (sep$2293, s$2294) {
+                    return s$2294.split(sep$2293);
                 });
-            var map$2286 = curry$2253(function (f$2294, xs$2295) {
-                    return xs$2295.map(f$2294);
+            var map$2287 = curry$2254(function (f$2295, xs$2296) {
+                    return xs$2296.map(f$2295);
                 });
-            var upcase$2288 = curry$2253(function (s$2296) {
-                    return s$2296.toUpperCase();
+            var upcase$2289 = curry$2254(function (s$2297) {
+                    return s$2297.toUpperCase();
                 });
-            var join$2290 = curry$2253(function (sep$2297, xs$2298) {
-                    return xs$2298.join(sep$2297);
+            var join$2291 = curry$2254(function (sep$2298, xs$2299) {
+                    return xs$2299.join(sep$2298);
                 });
             ;
-            require('buster').assert(compose$2254(join$2290('-'), map$2286(upcase$2288), split$2284(' '))('foo bar baz') === 'FOO-BAR-BAZ', 'function composition');
+            require('buster').assert(compose$2255(join$2291('-'), map$2287(upcase$2289), split$2285(' '))('foo bar baz') === 'FOO-BAR-BAZ', 'function composition');
         });
     });
 });
 require('buster').spec.describe('CurryJS.Data.Collection', function () {
-    var foldl$2300 = C$2247.Data.Collection.foldl;
-    var foldl1$2301 = C$2247.Data.Collection.foldl1;
-    var foldr$2302 = C$2247.Data.Collection.foldr;
-    var foldr1$2303 = C$2247.Data.Collection.foldr1;
+    var foldl$2301 = C$2247.Data.Collection.foldl;
+    var foldl1$2302 = C$2247.Data.Collection.foldl1;
+    var foldr$2303 = C$2247.Data.Collection.foldr;
+    var foldr1$2304 = C$2247.Data.Collection.foldr1;
     ;
     require('buster').spec.describe('foldl :: (a -> b -> a) -> a -> [b] -> a', function () {
         ;
         require('buster').spec.it('should fold a list from the left', function () {
             ;
-            require('buster').assert.equals(foldl$2300(function (acc$2312, x$2313) {
-                return acc$2312.concat(x$2313);
+            require('buster').assert.equals(foldl$2301(function (acc$2313, x$2314) {
+                return acc$2313.concat(x$2314);
             }.curry(), [], [
                 6,
                 4,
@@ -92,8 +92,8 @@ require('buster').spec.describe('CurryJS.Data.Collection', function () {
         ;
         require('buster').spec.it('should fold a list from the left using the first element as accumulator', function () {
             ;
-            require('buster').assert.equals(foldl1$2301(function (acc$2318, x$2319) {
-                return acc$2318.concat([x$2319]);
+            require('buster').assert.equals(foldl1$2302(function (acc$2319, x$2320) {
+                return acc$2319.concat([x$2320]);
             }.curry(), [
                 [],
                 [6],
@@ -110,8 +110,8 @@ require('buster').spec.describe('CurryJS.Data.Collection', function () {
         ;
         require('buster').spec.it('should fold a list from the right', function () {
             ;
-            require('buster').assert.equals(foldr$2302(function (acc$2324, x$2325) {
-                return acc$2324.concat(x$2325);
+            require('buster').assert.equals(foldr$2303(function (acc$2325, x$2326) {
+                return acc$2325.concat(x$2326);
             }.curry(), [], [
                 6,
                 4,
@@ -127,8 +127,8 @@ require('buster').spec.describe('CurryJS.Data.Collection', function () {
         ;
         require('buster').spec.it('should fold a list from the left using the last element as accumulator', function () {
             ;
-            require('buster').assert.equals(foldr1$2303(function (acc$2330, x$2331) {
-                return acc$2330.concat([x$2331]);
+            require('buster').assert.equals(foldr1$2304(function (acc$2331, x$2332) {
+                return acc$2331.concat([x$2332]);
             }.curry(), [
                 [6],
                 [4],
@@ -143,19 +143,36 @@ require('buster').spec.describe('CurryJS.Data.Collection', function () {
     });
 });
 require('buster').spec.describe('CurryJS.Control.Functor', function () {
-    var map$2333 = C$2247.Control.Functor.map;
+    var map$2334 = C$2247.Control.Functor.map;
     ;
     require('buster').spec.describe('map :: Functor f => (a -> b) -> f a -> f b', function () {
         ;
         require('buster').spec.it('should delegate to the functor', function () {
-            var obj$2344 = {
-                    map: function (f$2347) {
-                        return f$2347(1);
+            var obj$2345 = {
+                    map: function (f$2348) {
+                        return f$2348(1);
                     }.curry()
                 };
-            require('buster').assert(map$2333(function (x$2348) {
-                return x$2348 + 2;
-            }.curry(), obj$2344) === 3, 'map over functor');
+            require('buster').assert(map$2334(function (x$2349) {
+                return x$2349 + 2;
+            }.curry(), obj$2345) === 3, 'map over functor');
+        });
+    });
+});
+require('buster').spec.describe('CurryJS.Control.Applicative', function () {
+    var ap$2351 = C$2247.Control.Applicative.ap;
+    ;
+    require('buster').spec.describe('ap :: Applicative f => f (a -> b) -> f a -> f b', function () {
+        ;
+        require('buster').spec.it('should delegate to the applicative', function () {
+            var obj$2362 = {
+                    ap: function (f$2365) {
+                        return f$2365(1);
+                    }.curry()
+                };
+            require('buster').assert(ap$2351(function (x$2366) {
+                return x$2366 + 2;
+            }.curry(), obj$2362) === 3, 'apply over functor');
         });
     });
 });
