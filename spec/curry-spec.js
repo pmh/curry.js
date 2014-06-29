@@ -46,7 +46,7 @@ describe "CurryJS" {
 }
 
 describe "CurryJS.Predicates" {
-  { not, and, isObject, isArray, isNumber, isRegExp, isString, isNull, isUndef } := C.Predicates;
+  { not, and, or, isObject, isArray, isNumber, isRegExp, isString, isNull, isUndef } := C.Predicates;
 
   describe "not :: Truthy -> Bool" {
     test "not(true)"  { not(true)  === false }
@@ -62,6 +62,20 @@ describe "CurryJS.Predicates" {
     test "and(['x',   true ]) => true " { and(['x',   true ]) === true  }
     test "and([0,     true ]) => false" { and([0,     true ]) === false }
     test "and([1,     true ]) => true " { and([1,     true ]) === true  }
+  }
+
+  describe "or :: [Truthy] -> Bool" {
+    test "or([true,  true ]) => true " { or([true,  true ]) === true  }
+    test "or([true,  false]) => true " { or([true,  false]) === true  }
+    test "or([false, true ]) => true " { or([false, true ]) === true  }
+    test "or([false, false]) => false" { or([false, false]) === false }
+    test "or(['',    true ]) => true " { or(['',    true ]) === true  }
+    test "or(['',    false]) => false" { or(['',    false]) === false }
+    test "or(['x',   true ]) => true " { or(['x',   true ]) === true  }
+    test "or([0,     true ]) => true " { or([0,     true ]) === true }
+    test "or([0,     false]) => false" { or([0,     false]) === false }
+    test "or([1,     true ]) => true " { or([1,     true ]) === true  }
+    test "or([1,     false]) => true " { or([1,     false]) === true  }
   }
 
   describe "isObject" {
