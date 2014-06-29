@@ -39,6 +39,8 @@
   */
     var curry$2152 = function (f$2221, n$2222) {
         var arity$2223 = typeof n$2222 !== 'undefined' ? n$2222 : typeof f$2221.__arity !== 'undefined' ? f$2221.__arity : f$2221.length, name$2224 = f$2221.name || f$2221.__name;
+        if (arity$2223 < 2)
+            return f$2221;
         var curriedFn$2225 = withMeta$2151(function () {
                 var args$2226 = [].slice.call(arguments, 0, arity$2223), realArity$2227 = args$2226.filter(function (x$2229) {
                         return x$2229 !== __$2149;
