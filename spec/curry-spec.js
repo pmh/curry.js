@@ -46,7 +46,7 @@ describe "CurryJS" {
 }
 
 describe "CurryJS.Predicates" {
-  { not, and, or, isObject, isArray, isNumber, isRegExp, isString, isNull, isUndef } := C.Predicates;
+  { not, and, or, isObject, isArray, isNumber, isRegExp, isString, isNull, isUndef, exists } := C.Predicates;
 
   describe "not :: Truthy -> Bool" {
     test "not(true)"  { not(true)  === false }
@@ -135,6 +135,16 @@ describe "CurryJS.Predicates" {
     test "isUndef(0)          => false" { isUndef(0)          === false }
     test "isUndef([])         => false" { isUndef([])         === false }
     test "isUndef({})         => false" { isUndef({})         === false }
+  }
+
+  describe "exists" {
+    test "exists(undefined)  => false" { exists(undefined)  === false }
+    test "exists(null)       => false" { exists(null)       === false }
+    test "exists('x')        => true " { exists('x')        === true  }
+    test "exists(/x/)        => true " { exists(/x/)        === true  }
+    test "exists(0)          => true " { exists(0)          === true  }
+    test "exists([])         => true " { exists([])         === true  }
+    test "exists({})         => true " { exists({})         === true  }
   }
 }
 
