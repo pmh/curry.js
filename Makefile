@@ -18,4 +18,4 @@ compile:
 	@sjs -m adt-simple/macros -m ./macros -m ./spec/spec-helpers.js spec/curry-spec.js -o src/spec/curry-spec.js
 
 test: src/spec/curry-spec.js
-	@buster-test
+	@buster-test --reporter specification

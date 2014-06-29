@@ -46,10 +46,70 @@ describe "CurryJS" {
 }
 
 describe "CurryJS.Predicates" {
-  { not } := C.Predicates;
+  { not, isObject, isArray, isNumber, isRegExp, isString, isNull, isUndef } := C.Predicates;
 
   describe "not :: a -> Bool" {
-    test "negation" { not(true) === false && not(false) === true }
+    test "not(true)"  { not(true)  === false }
+    test "not(false)" { not(false) === true  }
+  }
+
+  describe "isObject" {
+    test "isObject({})  => true " { isObject({})  === true  }
+    test "isObject([])  => false" { isObject([])  === false }
+    test "isObject(0)   => false" { isObject(0)   === false }
+    test "isObject(/x/) => false" { isObject(/x/) === false }
+    test "isObject('0') => false" { isObject('x') === false }
+    test "isObject(0)   => false" { isObject(0)   === false }
+  }
+
+  describe "isArray" {
+    test "isArray([])  => true " { isArray([])  === true  }
+    test "isArray({})  => false" { isArray({})  === false }
+    test "isArray(0)   => false" { isArray(0)   === false }
+    test "isArray(/x/) => false" { isArray(/x/) === false }
+    test "isArray('x') => false" { isArray('x') === false }
+  }
+
+  describe "isNumber" {
+    test "isNumber(0)   => true " { isNumber(0)   === true  }
+    test "isNumber([])  => false" { isNumber([])  === false }
+    test "isNumber({})  => false" { isNumber({})  === false }
+    test "isNumber(/x/) => false" { isNumber(/x/) === false }
+    test "isNumber('x') => false" { isNumber('x') === false }
+  }
+
+  describe "isRegExp" {
+    test "isRegExp(/x/) => true " { isRegExp(/x/) === true  }
+    test "isRegExp(0)   => false" { isRegExp(0)   === false }
+    test "isRegExp([])  => false" { isRegExp([])  === false }
+    test "isRegExp({})  => false" { isRegExp({})  === false }
+    test "isRegExp('x') => false" { isRegExp('x') === false }
+  }
+
+  describe "isString" {
+    test "isString('x') => true " { isString('x') === true  }
+    test "isString(/x/) => false" { isString(/x/) === false }
+    test "isString(0)   => false" { isString(0)   === false }
+    test "isString([])  => false" { isString([])  === false }
+    test "isString({})  => false" { isString({})  === false }
+  }
+
+  describe "isNull" {
+    test "isNull(null)  => true " { isNull(null)  === true  }
+    test "isNull('x')   => true " { isNull('x')   === false }
+    test "isNull(/x/)   => false" { isNull(/x/)   === false }
+    test "isNull(0)     => false" { isNull(0)     === false }
+    test "isNull([])    => false" { isNull([])    === false }
+    test "isNull({})    => false" { isNull({})    === false }
+  }
+
+  describe "isUndef" {
+    test "isUndef(undefined)  => true " { isUndef(undefined)  === true  }
+    test "isUndef('x')        => false" { isUndef('x')        === false }
+    test "isUndef(/x/)        => false" { isUndef(/x/)        === false }
+    test "isUndef(0)          => false" { isUndef(0)          === false }
+    test "isUndef([])         => false" { isUndef([])         === false }
+    test "isUndef({})         => false" { isUndef({})         === false }
   }
 }
 

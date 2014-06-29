@@ -2,21 +2,22 @@
     'use strict';
     var Base$2144 = require('./adt-derivers').Base;
     var __slice$2146 = [].slice;
+    var __toString$2148 = {}.toString;
     // ***************************************************************
     // **                       CurryJS.Core                        **
     // ***************************************************************
     // __ :: () -> ()
-    var __$2147 = function noop() {
+    var __$2149 = function noop() {
     };
-    var extendNative$2148 = function (native$2176, prop$2177, f$2178) {
-        return Object.defineProperty(native$2176, prop$2177, { value: f$2178 });
+    var extendNative$2150 = function (native$2199, prop$2200, f$2201) {
+        return Object.defineProperty(native$2199, prop$2200, { value: f$2201 });
     };
-    var withMeta$2149 = function (f$2179, meta$2180) {
-        var keys$2181 = Object.keys(meta$2180);
-        keys$2181.forEach(function (name$2182) {
-            Object.defineProperty(f$2179, '__' + name$2182, { value: meta$2180[name$2182] });
+    var withMeta$2151 = function (f$2202, meta$2203) {
+        var keys$2204 = Object.keys(meta$2203);
+        keys$2204.forEach(function (name$2205) {
+            Object.defineProperty(f$2202, '__' + name$2205, { value: meta$2203[name$2205] });
         });
-        return f$2179;
+        return f$2202;
     };
     /*
   * curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))
@@ -36,38 +37,38 @@
   *   mod2(2)     //=> 0
   *   mod2(3)     //=> 1
   */
-    var curry$2150 = function (f$2183, n$2184) {
-        var arity$2185 = typeof n$2184 !== 'undefined' ? n$2184 : typeof f$2183.__arity !== 'undefined' ? f$2183.__arity : f$2183.length, name$2186 = f$2183.name || f$2183.__name;
-        var curriedFn$2187 = withMeta$2149(function () {
-                var args$2188 = [].slice.call(arguments, 0, arity$2185), realArity$2189 = args$2188.filter(function (x$2191) {
-                        return x$2191 !== __$2147;
-                    }).length, self$2190 = this;
-                if (realArity$2189 >= arity$2185)
-                    return f$2183.apply(self$2190, arguments);
+    var curry$2152 = function (f$2206, n$2207) {
+        var arity$2208 = typeof n$2207 !== 'undefined' ? n$2207 : typeof f$2206.__arity !== 'undefined' ? f$2206.__arity : f$2206.length, name$2209 = f$2206.name || f$2206.__name;
+        var curriedFn$2210 = withMeta$2151(function () {
+                var args$2211 = [].slice.call(arguments, 0, arity$2208), realArity$2212 = args$2211.filter(function (x$2214) {
+                        return x$2214 !== __$2149;
+                    }).length, self$2213 = this;
+                if (realArity$2212 >= arity$2208)
+                    return f$2206.apply(self$2213, arguments);
                 else {
-                    var g$2192 = withMeta$2149(function () {
-                            var partialArgs$2193 = [].slice.call(arguments), newArgs$2194 = [];
-                            for (var i$2195 = 0; i$2195 < args$2188.length; i$2195++)
-                                newArgs$2194[i$2195] = args$2188[i$2195] === __$2147 ? partialArgs$2193.length === 0 ? undefined : partialArgs$2193.shift() : args$2188[i$2195];
-                            return curriedFn$2187.apply(self$2190, newArgs$2194.concat(partialArgs$2193));
+                    var g$2215 = withMeta$2151(function () {
+                            var partialArgs$2216 = [].slice.call(arguments), newArgs$2217 = [];
+                            for (var i$2218 = 0; i$2218 < args$2211.length; i$2218++)
+                                newArgs$2217[i$2218] = args$2211[i$2218] === __$2149 ? partialArgs$2216.length === 0 ? undefined : partialArgs$2216.shift() : args$2211[i$2218];
+                            return curriedFn$2210.apply(self$2213, newArgs$2217.concat(partialArgs$2216));
                         }, {
-                            name: name$2186,
-                            arity: arity$2185 - realArity$2189,
+                            name: name$2209,
+                            arity: arity$2208 - realArity$2212,
                             curried: true
                         });
-                    g$2192.toString = curriedFn$2187.toString.bind(curriedFn$2187);
-                    return g$2192;
+                    g$2215.toString = curriedFn$2210.toString.bind(curriedFn$2210);
+                    return g$2215;
                 }
             }, {
-                name: name$2186,
-                arity: arity$2185,
+                name: name$2209,
+                arity: arity$2208,
                 curried: true
             });
-        curriedFn$2187.toString = f$2183.toString.bind(f$2183);
-        return curriedFn$2187;
+        curriedFn$2210.toString = f$2206.toString.bind(f$2206);
+        return curriedFn$2210;
     };
-    extendNative$2148(Function.prototype, 'curry', function (n$2196) {
-        return curry$2150(this, n$2196);
+    extendNative$2150(Function.prototype, 'curry', function (n$2219) {
+        return curry$2152(this, n$2219);
     });
     /*
   * compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)
@@ -88,11 +89,11 @@
   * odd  (1) => true
   *
   */
-    var compose$2151 = function () {
-        var fns$2197 = __slice$2146.call(arguments), self$2198 = this;
-        return fns$2197.reduce(function (f$2199, g$2200) {
+    var compose$2153 = function () {
+        var fns$2220 = __slice$2146.call(arguments), self$2221 = this;
+        return fns$2220.reduce(function (f$2222, g$2223) {
             return function () {
-                return f$2199.call(self$2198, g$2200.apply(self$2198, arguments));
+                return f$2222.call(self$2221, g$2223.apply(self$2221, arguments));
             };
         });
     };
@@ -100,19 +101,96 @@
     // **                    CurryJS.Predicates                     **
     // ***************************************************************
     // not :: a -> Bool
-    function not$2154(x$2201) {
-        return function $_name(x$2202) {
-            return !x$2202;
+    function not$2156(x$2224) {
+        return function $_name(x$2225) {
+            return !x$2225;
         }.curry().apply(null, arguments);
     }
     ;
+    // isObject :: a -> Bool
+    function isObject$2161(obj$2226) {
+        return function $_name(obj$2227) {
+            return function (a0$2230) {
+                if (Object.prototype.toString.call(a0$2230) === '[object Object]') {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2227);
+        }.curry().apply(null, arguments);
+    }
+    // isArray :: a -> Bool
+    function isArray$2164(obj$2231) {
+        return function $_name(obj$2232) {
+            return function (a0$2235) {
+                if (Array.isArray ? Array.isArray(a0$2235) : Object.prototype.toString.call(a0$2235) === '[object Array]') {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2232);
+        }.curry().apply(null, arguments);
+    }
+    // isNumber :: a -> Bool
+    function isNumber$2167(obj$2236) {
+        return function $_name(obj$2237) {
+            return function (a0$2240) {
+                if (typeof a0$2240 === 'number' || Object.prototype.toString.call(a0$2240) === '[object Number]') {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2237);
+        }.curry().apply(null, arguments);
+    }
+    // isRegExp :: a -> Bool
+    function isRegExp$2170(obj$2241) {
+        return function $_name(obj$2242) {
+            return function (a0$2245) {
+                if (Object.prototype.toString.call(a0$2245) === '[object RegExp]') {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2242);
+        }.curry().apply(null, arguments);
+    }
+    // isString :: a -> Bool
+    function isString$2173(obj$2246) {
+        return function $_name(obj$2247) {
+            return function (a0$2250) {
+                if (typeof a0$2250 === 'string' || Object.prototype.toString.call(a0$2250) === '[object String]') {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2247);
+        }.curry().apply(null, arguments);
+    }
+    // isNull :: a -> Bool
+    function isNull$2176(obj$2251) {
+        return function $_name(obj$2252) {
+            return function (a0$2255) {
+                if (a0$2255 === null) {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2252);
+        }.curry().apply(null, arguments);
+    }
+    // isUndef :: a -> Bool
+    function isUndef$2179(obj$2256) {
+        return function $_name(obj$2257) {
+            return function (a0$2260) {
+                if (a0$2260 === void 0) {
+                    return true;
+                }
+                return false;
+            }.call(this, obj$2257);
+        }.curry().apply(null, arguments);
+    }
     // ***************************************************************
     // **                  CurryJS.Control.Functor                  **
     // ***************************************************************
     // map :: Functor f => (a -> b) -> f a -> f b
-    function map$2157(f$2203, xs$2204) {
-        return function $_name(f$2205, xs$2206) {
-            return xs$2206.map(f$2205);
+    function map$2180(f$2261, xs$2262) {
+        return function $_name(f$2263, xs$2264) {
+            return xs$2264.map(f$2263);
         }.curry().apply(null, arguments);
     }
     ;
@@ -120,9 +198,9 @@
     // **                CurryJS.Control.Applicative                **
     // ***************************************************************
     // ap :: Applicative f => f (a -> b) -> f a -> f b
-    function ap$2160(f$2207, xs$2208) {
-        return function $_name(f$2209, xs$2210) {
-            return xs$2210.ap(f$2209);
+    function ap$2183(f$2265, xs$2266) {
+        return function $_name(f$2267, xs$2268) {
+            return xs$2268.ap(f$2267);
         }.curry().apply(null, arguments);
     }
     ;
@@ -130,9 +208,9 @@
     // **                   CurryJS.Control.Monad                   **
     // ***************************************************************
     // chain :: Monad m => m a -> (a -> m b) -> m b
-    function chain$2163(xs$2211, f$2212) {
-        return function $_name(xs$2213, f$2214) {
-            return xs$2213.chain(f$2214);
+    function chain$2186(xs$2269, f$2270) {
+        return function $_name(xs$2271, f$2272) {
+            return xs$2271.chain(f$2272);
         }.curry().apply(null, arguments);
     }
     ;
@@ -140,52 +218,62 @@
     // **                  CurryJS.Data.Collection                  **
     // ***************************************************************
     // foldl :: (a -> b -> a) -> a -> [b] -> a
-    function foldl$2166(f$2215, acc$2216, xs$2217) {
-        return function $_name(f$2218, acc$2219, xs$2220) {
-            return xs$2220.reduce(f$2218, acc$2219);
+    function foldl$2189(f$2273, acc$2274, xs$2275) {
+        return function $_name(f$2276, acc$2277, xs$2278) {
+            return xs$2278.reduce(f$2276, acc$2277);
         }.curry().apply(null, arguments);
     }
     ;
     // foldl1 :: (a -> a -> a) -> [a] -> a
-    function foldl1$2169(f$2221, xs$2222) {
-        return function $_name(f$2223, xs$2224) {
-            return xs$2224.reduce(f$2223);
+    function foldl1$2192(f$2279, xs$2280) {
+        return function $_name(f$2281, xs$2282) {
+            return xs$2282.reduce(f$2281);
         }.curry().apply(null, arguments);
     }
     ;
     // foldr :: (a -> b -> b) -> b -> [a] -> b
-    function foldr$2172(f$2225, acc$2226, xs$2227) {
-        return function $_name(f$2228, acc$2229, xs$2230) {
-            return xs$2230.reduceRight(f$2228, acc$2229);
+    function foldr$2195(f$2283, acc$2284, xs$2285) {
+        return function $_name(f$2286, acc$2287, xs$2288) {
+            return xs$2288.reduceRight(f$2286, acc$2287);
         }.curry().apply(null, arguments);
     }
     ;
     // foldr1 :: (a -> a -> a) -> [a] -> a
-    function foldr1$2175(f$2231, xs$2232) {
-        return function $_name(f$2233, xs$2234) {
-            return xs$2234.reduceRight(f$2233);
+    function foldr1$2198(f$2289, xs$2290) {
+        return function $_name(f$2291, xs$2292) {
+            return xs$2292.reduceRight(f$2291);
         }.curry().apply(null, arguments);
     }
     ;
     module.exports = {
         Core: {
-            __: __$2147,
-            curry: curry$2150,
-            compose: compose$2151
+            __: __$2149,
+            curry: curry$2152,
+            compose: compose$2153
         },
-        Predicates: { not: not$2154 },
+        Predicates: {
+            not: not$2156,
+            is: is,
+            isObject: isObject$2161,
+            isArray: isArray$2164,
+            isNumber: isNumber$2167,
+            isRegExp: isRegExp$2170,
+            isString: isString$2173,
+            isNull: isNull$2176,
+            isUndef: isUndef$2179
+        },
         Data: {
             Collection: {
-                foldl: foldl$2166,
-                foldl1: foldl1$2169,
-                foldr: foldr$2172,
-                foldr1: foldr1$2175
+                foldl: foldl$2189,
+                foldl1: foldl1$2192,
+                foldr: foldr$2195,
+                foldr1: foldr1$2198
             }
         },
         Control: {
-            Functor: { map: map$2157 },
-            Applicative: { ap: ap$2160 },
-            Monad: { chain: chain$2163 }
+            Functor: { map: map$2180 },
+            Applicative: { ap: ap$2183 },
+            Monad: { chain: chain$2186 }
         }
     };
 }());
