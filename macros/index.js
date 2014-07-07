@@ -1242,7 +1242,7 @@ macro fun {
     case { _ $name:ident ($params:ident (,) ...) = { $body ... } } => {
         return #{
             function $name ($params (,) ...) {
-                return (function $_name ($params (,) ...) { $body ... }).curry().apply(null, arguments);
+                return (function $name ($params (,) ...) { $body ... }).curry().apply(null, arguments);
             }
         }
     }
@@ -1257,6 +1257,10 @@ macro fun {
 
     case { _ $name:ident ($params:ident (,) ...) = match { $body ... } } => {
         return #{ fun $name ($params (,) ...) = { return matcher ($params (,) ...) { $body ... } } }
+    }
+
+    case { _ ($params:ident (,) ...) = match ($match_args (,) ...) { $body ... } } => {
+        return #{ fun ($params (,) ...) = { return matcher ($match_args (,) ...) { $body ... } } }
     }
 
     case { _ ($params:ident (,) ...) = match { $body ... } } => {
@@ -1287,10 +1291,16 @@ macro (:=) {
   }
 }
 
-operator (..)  9  right { $l, $r } => #{ (function (x) { return $l($r(x)) })  }
-operator ($)   1  right { $l, $r } => #{ $l($r)                               }
+operator (..)  9 right { $l, $r } => #{ (function (x) { return $l($r(x)) })  }
+operator ($)   1 right { $l, $r } => #{ $l($r)                               }
+operator (<$>) 4 right { $l, $r } => #{ $r.map($l)                           }
+operator (<*>) 4 left  { $l, $r } => #{ $l.ap($r)                            }
+operator (>>=) 1 left  { $l, $r } => #{ $l.chain($r.bind(this))              }
 
 export fun
 export (:=)
+export (<$>)
+export (<*>)
+export (>>=)
 export (..)
 export ($)

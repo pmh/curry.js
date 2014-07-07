@@ -17,8 +17,8 @@ let it = macro {
 export it
 
 let test = macro {
-  rule { $desc { $a:expr =>= $b:expr } } => {
-    ;require("buster").assert.equals($a, $b, $desc)
+  rule { $desc { $($a:expr =>= $b:expr) ... } } => {
+    ;$(require("buster").assert.equals($a, $b, $desc)) ...
   }
 
   rule { $desc { $a:expr =!= $b:ident } } => {

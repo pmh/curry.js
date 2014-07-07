@@ -148,6 +148,84 @@ describe "CurryJS.Predicates" {
   }
 }
 
+describe "CurryJS.Data.Option" {
+  { map                } := C.Control.Functor;
+  { Option, Some, None } := C.Data.Option;
+
+  describe "map :: Functor f => (a -> b) -> f a -> f b" {
+    fun inc (a) = a + 1
+
+    it "satisfies the functor laws" {
+      fun id     (x) = x
+      fun inc    (x) = x + 1
+      fun square (x) = x * x
+
+      test "identity" {
+        map(id, Some(2)) =>= Some(2)
+        map(id, None)    =>= id(None)
+      }
+
+      test "composition" {
+        map(inc .. square, Some(2)) =>= map(inc) .. map(square) $ Some(2)
+      }
+    }
+  }
+
+  describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
+    fun comp (f) = fun (g) = fun (x) = f(g(x))
+
+    fun id   (x)    = x
+    fun add  (a, b) = a + b
+    fun prod (a)    = a * a
+
+    it "satisfies the laws" {
+      test "identity" {
+        Option.of(id) <*> Some(2) =>= Some(2)
+      }
+
+      test "composition" {
+        comp <$> Some(add(2)) <*> Some(prod) <*> Some(2) =>=
+          Some(add(2)) <*> (Some(prod) <*> Some(2))
+      }
+
+      test "homomorphism" {
+        Option.of(prod) <*> Some(2) =>= Option.of(prod(2))
+      }
+
+      test "interchange" {
+        Some(prod) <*> Some(2) =>= Some(fun (f) = f(2)) <*> Some(prod)
+      }
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+
+    it "satisfies the laws" {
+      test "associativity" {
+        Some([1]).concat(Some([2])).concat(Some([3])) =>=
+          Some([1]).concat(Some([2]).concat(Some([3])))
+      }
+
+      test "right identity" {
+        Some([1]).concat(Some([1]).empty()) =>= Some([1])
+      }
+
+      test "left identity" {
+        Some([1]).empty().concat(Some([1])) =>= Some([1])
+      }
+    }
+  }
+
+  describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
+    fun m_prod (x) = Some(x*x)
+    fun m_inc  (x) = Some(x+1)
+
+    test "associativity" {
+      Some(2).chain(m_prod).chain(m_inc) =>= Some(2).chain(fun (x) = m_prod(x).chain(m_inc) )
+    }
+  }
+}
+
 describe "CurryJS.Data.Collection" {
   {foldl, foldl1, foldr, foldr1} := C.Data.Collection;
 
@@ -201,10 +279,11 @@ describe "CurryJS.Control.Applicative" {
 
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
     it "should delegate to the applicative" {
-      obj := { ap: fun (f) = f(1) }
+      fa := { ap: fun (fb) = this.val(fb.val), val: fun (x) = x + 1 }
+      fb := { val: 2 }
 
       test "apply over functor" {
-        ap(fun (x) = x + 2, obj) === 3
+        ap(fa, fb) === 3
       }
     }
   }
