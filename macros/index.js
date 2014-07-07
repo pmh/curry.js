@@ -1239,41 +1239,37 @@ let matcher = macro {
 }
 
 macro fun {
-    case { _ $name:ident ($params:ident (,) ...) = { $body ... } } => {
-        return #{
-            function $name ($params (,) ...) {
-                return (function $name ($params (,) ...) { $body ... }).curry().apply(null, arguments);
-            }
-        }
-    }
+  case { _ $name:ident ($params:ident (,) ...) : match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun $name ($params (,) ...) : matcher ($match_args (,) ...) { $body ... } }
+  }
 
-    case { _ ($params:ident (,) ...) = { $body ... } } => {
-        return #{
-            (function ($params (,) ...) {
-                $body ...
-            }).curry()
-        }
-    }
+  case { _ ($params:ident (,) ...) : match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun ($params (,) ...) : matcher ($match_args (,) ...) { $body ... } }
+  }
 
-    case { _ $name:ident ($params:ident (,) ...) = match { $body ... } } => {
-        return #{ fun $name ($params (,) ...) = { return matcher ($params (,) ...) { $body ... } } }
-    }
+  case { _ $name:ident ($params:ident (,) ...) : match { $body ... } } => {
+    return #{ fun $name ($params (,) ...) : matcher ($params (,) ...) { $body ... } }
+  }
 
-    case { _ ($params:ident (,) ...) = match ($match_args (,) ...) { $body ... } } => {
-        return #{ fun ($params (,) ...) = { return matcher ($match_args (,) ...) { $body ... } } }
+  case { _ ($params:ident (,) ...) : match { $body ... } } => {
+    return #{ fun ($params (,) ...) : matcher ($params (,) ...) { $body ... } }
+  }
+   
+  case { _ $name:ident ($params:ident (,) ...) : $body:expr } => {
+    return #{
+      function $name ($params (,) ...) {
+        return (function $name ($params (,) ...) { return $body }).curry().apply(null, arguments);
+      }
     }
-
-    case { _ ($params:ident (,) ...) = match { $body ... } } => {
-        return #{ fun ($params (,) ...) = { return matcher ($params (,) ...) { $body ... } } }
+  }
+  
+  case { _ ($params:ident (,) ...) : $body:expr } => {
+    return #{
+      (function ($params (,) ...) {
+        return $body
+      }).curry()
     }
-     
-    case { _ $name:ident ($params:ident (,) ...) = $body:expr } => {
-        return #{ fun $name ($params (,) ...) = { return $body } }
-    }
-     
-    case { _ ($params:ident (,) ...) = $body:expr } => {
-        return #{ fun ($params (,) ...) = { return $body } }
-    }
+  }
 }
 
 macro (:=) {
