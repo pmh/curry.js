@@ -153,21 +153,18 @@ describe "CurryJS.Data.Option" {
   { Option, Some, None } := C.Data.Option;
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
-    fun inc (a): a + 1
+    fun inc    (x): x + 1
+    fun id     (x): x
+    fun inc    (x): x + 1
+    fun square (x): x * x
 
-    it "satisfies the functor laws" {
-      fun id     (x): x
-      fun inc    (x): x + 1
-      fun square (x): x * x
+    test "identity" {
+      map(id, Some(2)) =>= Some(2)
+      map(id, None)    =>= id(None)
+    }
 
-      test "identity" {
-        map(id, Some(2)) =>= Some(2)
-        map(id, None)    =>= id(None)
-      }
-
-      test "composition" {
-        map(inc .. square, Some(2)) =>= map(inc) .. map(square) $ Some(2)
-      }
+    test "composition" {
+      map(inc .. square, Some(2)) =>= map(inc) .. map(square) $ Some(2)
     }
   }
 
@@ -178,41 +175,36 @@ describe "CurryJS.Data.Option" {
     fun add  (a, b) : a + b
     fun prod (a)    : a * a
 
-    it "satisfies the laws" {
-      test "identity" {
-        Option.of(id) <*> Some(2) =>= Some(2)
-      }
+    test "identity" {
+      Option.of(id) <*> Some(2) =>= Some(2)
+    }
 
-      test "composition" {
-        comp <$> Some(add(2)) <*> Some(prod) <*> Some(2) =>=
-          Some(add(2)) <*> (Some(prod) <*> Some(2))
-      }
+    test "composition" {
+      comp <$> Some(add(2)) <*> Some(prod) <*> Some(2) =>=
+        Some(add(2)) <*> (Some(prod) <*> Some(2))
+    }
 
-      test "homomorphism" {
-        Option.of(prod) <*> Some(2) =>= Option.of(prod(2))
-      }
+    test "homomorphism" {
+      Option.of(prod) <*> Some(2) =>= Option.of(prod(2))
+    }
 
-      test "interchange" {
-        Some(prod) <*> Some(2) =>= Some(fun (f): f(2)) <*> Some(prod)
-      }
+    test "interchange" {
+      Some(prod) <*> Some(2) =>= Some(fun (f): f(2)) <*> Some(prod)
     }
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
+    test "associativity" {
+      Some([1]).concat(Some([2])).concat(Some([3])) =>=
+        Some([1]).concat(Some([2]).concat(Some([3])))
+    }
 
-    it "satisfies the laws" {
-      test "associativity" {
-        Some([1]).concat(Some([2])).concat(Some([3])) =>=
-          Some([1]).concat(Some([2]).concat(Some([3])))
-      }
+    test "right identity" {
+      Some([1]).concat(Some([1]).empty()) =>= Some([1])
+    }
 
-      test "right identity" {
-        Some([1]).concat(Some([1]).empty()) =>= Some([1])
-      }
-
-      test "left identity" {
-        Some([1]).empty().concat(Some([1])) =>= Some([1])
-      }
+    test "left identity" {
+      Some([1]).empty().concat(Some([1])) =>= Some([1])
     }
   }
 
@@ -227,7 +219,7 @@ describe "CurryJS.Data.Option" {
 }
 
 describe "CurryJS.Data.Collection" {
-  {foldl, foldl1, foldr, foldr1} := C.Data.Collection;
+  {foldl, foldl1, foldr, foldr1, flatten} := C.Data.Collection;
 
   describe "foldl :: (a -> b -> a) -> a -> [b] -> a" {
     it "should fold a list from the left" {
@@ -256,6 +248,57 @@ describe "CurryJS.Data.Collection" {
       test "concat" { 
         foldr1(fun (acc, x): acc.concat([x]), [[6], [4], [2], []]) =>= [[2], [4], [6]] 
       }
+    }
+  }
+
+  describe "flatten :: Monoid a => [a] -> a" {
+    var Some = C.Data.Option.Some;
+
+    it "flattens a list of monoid values" {
+      test "list of lists" {
+        flatten([[1,2,3], [4,5,6]]) =>= [1,2,3,4,5,6]
+      }
+      test "list of options" {
+        flatten([Some([1]), Some([2])]) =>= Some([1,2])
+      }
+    }
+  }
+}
+
+describe "CurryJS.Data.Array" {
+  describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
+    fun comp (f): fun (g): fun (x): f(g(x))
+
+    fun id   (x)    : x
+    fun add  (a, b) : a + b
+    fun prod (a)    : a * a
+
+    it "satisfies the laws" {
+      test "identity" {
+        Array.of(id) <*> [2] =>= [2]
+      }
+
+      test "composition" {
+        comp <$> [add(2)] <*> [prod] <*> [2] =>=
+          [add(2)] <*> ([prod] <*> [2])
+      }
+
+      test "homomorphism" {
+        Array.of(prod) <*> [2] =>= Array.of(prod(2))
+      }
+
+      test "interchange" {
+        [prod] <*> [2] =>= [fun (f): f(2)] <*> [prod]
+      }
+    }
+  }
+
+  describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
+    fun m_prod (x): [x*x]
+    fun m_inc  (x): [x+1]
+
+    test "associativity" {
+      [1,2,3].chain(m_prod).chain(m_inc) =>= [1,2,3].chain(fun (x): m_prod(x).chain(m_inc) )
     }
   }
 }
