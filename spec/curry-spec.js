@@ -153,10 +153,10 @@ describe "CurryJS.Data.Option" {
   { Option, Some, None } := C.Data.Option;
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
-    fun inc    (x): x + 1
-    fun id     (x): x
-    fun inc    (x): x + 1
-    fun square (x): x * x
+    fun inc    (x) = x + 1
+    fun id     (x) = x
+    fun inc    (x) = x + 1
+    fun square (x) = x * x
 
     test "identity" {
       map(id, Some(2)) =>= Some(2)
@@ -169,11 +169,11 @@ describe "CurryJS.Data.Option" {
   }
 
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
-    fun comp (f): fun (g): fun (x): f(g(x))
+    fun comp (f) = fun (g) = fun (x) = f(g(x))
 
-    fun id   (x)    : x
-    fun add  (a, b) : a + b
-    fun prod (a)    : a * a
+    fun id   (x)    = x
+    fun add  (a, b) = a + b
+    fun prod (a)    = a * a
 
     test "identity" {
       Option.of(id) <*> Some(2) =>= Some(2)
@@ -189,7 +189,7 @@ describe "CurryJS.Data.Option" {
     }
 
     test "interchange" {
-      Some(prod) <*> Some(2) =>= Some(fun (f): f(2)) <*> Some(prod)
+      Some(prod) <*> Some(2) =>= Some(fun (f) = f(2)) <*> Some(prod)
     }
   }
 
@@ -209,11 +209,11 @@ describe "CurryJS.Data.Option" {
   }
 
   describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
-    fun m_prod (x): Some(x*x)
-    fun m_inc  (x): Some(x+1)
+    fun m_prod (x) = Some(x*x)
+    fun m_inc  (x) = Some(x+1)
 
     test "associativity" {
-      Some(2).chain(m_prod).chain(m_inc) =>= Some(2).chain(fun (x): m_prod(x).chain(m_inc) )
+      Some(2).chain(m_prod).chain(m_inc) =>= Some(2).chain(fun (x) = m_prod(x).chain(m_inc) )
     }
   }
 }
@@ -223,14 +223,14 @@ describe "CurryJS.Data.Collection" {
 
   describe "foldl :: (a -> b -> a) -> a -> [b] -> a" {
     it "should fold a list from the left" {
-      test "concat" { foldl(fun (acc, x): acc.concat(x), [], [6, 4, 2]) =>= [6, 4, 2] }
+      test "concat" { foldl(fun (acc, x) = acc.concat(x), [], [6, 4, 2]) =>= [6, 4, 2] }
     }
   }
 
   describe "foldl1 :: (a -> a -> a) -> [a] -> a" {
     it "should fold a list from the left using the first element as accumulator" {
       test "concat" {
-        foldl1(fun (acc, x): acc.concat([x]), [[], [6], [4], [2]]) =>= [[6], [4], [2]]
+        foldl1(fun (acc, x) = acc.concat([x]), [[], [6], [4], [2]]) =>= [[6], [4], [2]]
       }
     }
   }
@@ -238,7 +238,7 @@ describe "CurryJS.Data.Collection" {
   describe "foldr :: (a -> b -> b) -> b -> [a] -> b" {
     it "should fold a list from the right" {
       test "concat" {
-        foldr(fun (acc, x): acc.concat(x), [], [6, 4, 2]) =>= [2, 4, 6]
+        foldr(fun (acc, x) = acc.concat(x), [], [6, 4, 2]) =>= [2, 4, 6]
       }
     }
   }
@@ -246,7 +246,7 @@ describe "CurryJS.Data.Collection" {
   describe "foldr1 :: (a -> a -> a) -> [a] -> a" {
     it "should fold a list from the left using the last element as accumulator" {
       test "concat" { 
-        foldr1(fun (acc, x): acc.concat([x]), [[6], [4], [2], []]) =>= [[2], [4], [6]] 
+        foldr1(fun (acc, x) = acc.concat([x]), [[6], [4], [2], []]) =>= [[2], [4], [6]] 
       }
     }
   }
@@ -267,11 +267,11 @@ describe "CurryJS.Data.Collection" {
 
 describe "CurryJS.Data.Array" {
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
-    fun comp (f): fun (g): fun (x): f(g(x))
+    fun comp (f) = fun (g) = fun (x) = f(g(x))
 
-    fun id   (x)    : x
-    fun add  (a, b) : a + b
-    fun prod (a)    : a * a
+    fun id   (x)    = x
+    fun add  (a, b) = a + b
+    fun prod (a)    = a * a
 
     it "satisfies the laws" {
       test "identity" {
@@ -288,17 +288,17 @@ describe "CurryJS.Data.Array" {
       }
 
       test "interchange" {
-        [prod] <*> [2] =>= [fun (f): f(2)] <*> [prod]
+        [prod] <*> [2] =>= [fun (f) = f(2)] <*> [prod]
       }
     }
   }
 
   describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
-    fun m_prod (x): [x*x]
-    fun m_inc  (x): [x+1]
+    fun m_prod (x) = [x*x]
+    fun m_inc  (x) = [x+1]
 
     test "associativity" {
-      [1,2,3].chain(m_prod).chain(m_inc) =>= [1,2,3].chain(fun (x): m_prod(x).chain(m_inc) )
+      [1,2,3].chain(m_prod).chain(m_inc) =>= [1,2,3].chain(fun (x) = m_prod(x).chain(m_inc) )
     }
   }
 }
@@ -308,10 +308,10 @@ describe "CurryJS.Control.Functor" {
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
     it "should delegate to the functor" {
-      obj := { map: fun (f): f(1) }
+      obj := { map: fun (f) = f(1) }
 
       test "map over functor" {
-        map(fun (x): x + 2, obj) === 3
+        map(fun (x) = x + 2, obj) === 3
       }
     }
   }
@@ -322,7 +322,7 @@ describe "CurryJS.Control.Applicative" {
 
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
     it "should delegate to the applicative" {
-      fa := { ap: fun (fb): this.val(fb.val), val: fun (x): x + 1 }
+      fa := { ap: fun (fb) = this.val(fb.val), val: fun (x) = x + 1 }
       fb := { val: 2 }
 
       test "apply over functor" {
@@ -337,10 +337,10 @@ describe "CurryJS.Control.Monad" {
 
   describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
     it "should delegate to the monad instance" {
-      obj := { chain: fun (f): f(1) }
+      obj := { chain: fun (f) = f(1) }
 
       test "chain monadic values" {
-        chain(obj, fun (x): x + 2) === 3
+        chain(obj, fun (x) = x + 2) === 3
       }
     }
   }

@@ -1239,23 +1239,23 @@ let matcher = macro {
 }
 
 macro fun {
-  case { _ $name:ident ($params:ident (,) ...) : match ($match_args (,) ...) { $body ... } } => {
-    return #{ fun $name ($params (,) ...) : matcher ($match_args (,) ...) { $body ... } }
+  case { _ $name:ident ($params:ident (,) ...) = match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun $name ($params (,) ...) = matcher ($match_args (,) ...) { $body ... } }
   }
 
-  case { _ ($params:ident (,) ...) : match ($match_args (,) ...) { $body ... } } => {
-    return #{ fun ($params (,) ...) : matcher ($match_args (,) ...) { $body ... } }
+  case { _ ($params:ident (,) ...) = match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun ($params (,) ...) = matcher ($match_args (,) ...) { $body ... } }
   }
 
-  case { _ $name:ident ($params:ident (,) ...) : match { $body ... } } => {
-    return #{ fun $name ($params (,) ...) : matcher ($params (,) ...) { $body ... } }
+  case { _ $name:ident ($params:ident (,) ...) = match { $body ... } } => {
+    return #{ fun $name ($params (,) ...) = matcher ($params (,) ...) { $body ... } }
   }
 
-  case { _ ($params:ident (,) ...) : match { $body ... } } => {
-    return #{ fun ($params (,) ...) : matcher ($params (,) ...) { $body ... } }
+  case { _ ($params:ident (,) ...) = match { $body ... } } => {
+    return #{ fun ($params (,) ...) = matcher ($params (,) ...) { $body ... } }
   }
    
-  case { _ $name:ident ($params:ident (,) ...) : $body:expr } => {
+  case { _ $name:ident ($params:ident (,) ...) = $body:expr } => {
     return #{
       function $name ($params (,) ...) {
         return (function $name ($params (,) ...) { return $body }).curry().apply(null, arguments);
@@ -1263,12 +1263,41 @@ macro fun {
     }
   }
   
-  case { _ ($params:ident (,) ...) : $body:expr } => {
+  case { _ ($params:ident (,) ...) = $body:expr } => {
     return #{
       (function ($params (,) ...) {
         return $body
       }).curry()
     }
+  }
+
+
+  case { _ $first . $rest:ident (.) ... ($self:ident, $params:ident (,) ...) = match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun $first.$rest (.) ... ($self, $params (,) ...) = matcher ($match_args (,) ...) { $body ... } }
+  }
+
+  case { _ $first . $rest:ident (.) ... ($self:ident) = match ($match_args (,) ...) { $body ... } } => {
+    return #{ fun $first.$rest (.) ... ($self,) = matcher ($match_args (,) ...) { $body ... } }
+  }
+
+  case { _ $first . $rest:ident (.) ... ($self:ident, $params:ident (,) ...) = match { $body ... } } => {
+    return #{ fun $first.$rest (.) ... ($self, $params (,) ...) = matcher ($self, $params (,) ...) { $body ... } }
+  }
+
+  case { _ $first . $rest:ident (.) ... ($self:ident) = match { $body ... } } => {
+    return #{ fun $first.$rest (.) ... ($self,) = matcher ($self) { $body ... } }
+  }
+
+  case { _ $first . $rest:ident (.) ... ($self:ident, $params:ident (,) ...) = $body:expr } => {
+    return #{
+      $first.$rest (.) ... = (function ( $params (,) ...) {
+        return (function ($self, $params (,) ...) { return $body }).apply(this, [this].concat([].slice.call(arguments)))
+      }).curry()
+    }
+  }
+  
+  case { _ $first . $rest:ident (.) ... ($self:ident) = $body:expr } => {
+    return #{ fun $first.$rest (.) ... ($self,) = $body }
   }
 }
 
