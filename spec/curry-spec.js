@@ -148,6 +148,34 @@ describe "CurryJS.Predicates" {
   }
 }
 
+describe "CurryJS.Math" {
+  { plus, minus, times, div } := C.Math;
+
+  describe "plus" {
+    it "it performs addition" {
+      test "addition" { plus(4, 2) == 6 }
+    }
+  }
+
+  describe "minus" {
+    it "it performs subtraction" {
+      test "subtraction" { minus(4, 2) == 2 }
+    }
+  }
+
+  describe "times" {
+    it "it performs multiplication" {
+      test "multiplication" { times(4, 2) == 8 }
+    }
+  }
+
+  describe "div" {
+    it "it performs division" {
+      test "division" { div(4, 2) == 2 }
+    }
+  }
+}
+
 describe "CurryJS.Data.Option" {
   { map                } := C.Control.Functor;
   { Option, Some, None } := C.Data.Option;
