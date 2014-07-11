@@ -176,6 +176,43 @@ describe "CurryJS.Math" {
   }
 }
 
+describe "CurryJS.Number.Sum" {
+  { Sum, getSum } := C.Number.Sum;
+
+  describe "empty :: Monoid a => a" {
+    it "uses 0 as the identity value" {
+      test "empty" { Sum(2).empty() =>= Sum(0) }
+    }
+  }
+
+  describe "getSum :: Sum a -> a" {
+    it "extracts the number from the sum" {
+      test "getSum" { getSum(Sum(2)) }
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+    it "performs addition" {
+      test "concat" { Sum(2).concat(Sum(4)) =>= Sum(6) }
+    }
+
+    it "satisfies the monoid laws" {
+      test "associativity" {
+        Sum(1).concat(Sum(2)).concat(Sum(3)) =>=
+          Sum(1).concat(Sum(2).concat(Sum(3)))
+      }
+
+      test "right identity" {
+        Sum(1).concat(Sum(1).empty()) =>= Sum(1)
+      }
+
+      test "left identity" {
+        Sum(1).empty().concat(Sum(1)) =>= Sum(1)
+      }
+    }
+  }
+}
+
 describe "CurryJS.Data.Option" {
   { map                } := C.Control.Functor;
   { Option, Some, None } := C.Data.Option;
