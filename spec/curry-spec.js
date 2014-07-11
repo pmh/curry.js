@@ -218,6 +218,76 @@ describe "CurryJS.Data.Option" {
   }
 }
 
+describe "CurryJS.Data.Option" {
+  { map                 } := C.Control.Functor;
+  { Either, Left, Right } := C.Data.Either;
+
+  describe "map :: Functor f => (a -> b) -> f a -> f b" {
+    fun inc    (x) = x + 1
+    fun id     (x) = x
+    fun inc    (x) = x + 1
+    fun square (x) = x * x
+
+    test "map identity" {
+      map(id, Right(2)) =>= Right(2)
+      map(id, Left(2))  =>= id(Left(2))
+    }
+
+    test "composition" {
+      map(inc .. square, Right(2)) =>= map(inc) .. map(square) $ Right(2)
+    }
+  }
+
+  describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
+    fun comp (f) = fun (g) = fun (x) = f(g(x))
+
+    fun id   (x)    = x
+    fun add  (a, b) = a + b
+    fun prod (a)    = a * a
+
+    test "identity" {
+      Either.of(id) <*> Right(2) =>= Right(2)
+    }
+
+    test "composition" {
+      comp <$> Right(add(2)) <*> Right(prod) <*> Right(2) =>=
+        Right(add(2)) <*> (Right(prod) <*> Right(2))
+    }
+
+    test "homomorphism" {
+      Either.of(prod) <*> Right(2) =>= Either.of(prod(2))
+    }
+
+    test "interchange" {
+      Right(prod) <*> Right(2) =>= Right(fun (f) = f(2)) <*> Right(prod)
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+    test "associativity" {
+      Right([1]).concat(Right([2])).concat(Right([3])) =>=
+        Right([1]).concat(Right([2]).concat(Right([3])))
+    }
+
+    test "right identity" {
+      Right([1]).concat(Right([1]).empty()) =>= Right([1])
+    }
+
+    test "left identity" {
+      Right([1]).empty().concat(Right([1])) =>= Right([1])
+    }
+  }
+
+  describe "chain :: Monad m => m a -> (a -> m b) -> m b" {
+    fun m_prod (x) = Right(x*x)
+    fun m_inc  (x) = Right(x+1)
+
+    test "associativity" {
+      Right(2).chain(m_prod).chain(m_inc) =>= Right(2).chain(fun (x) = m_prod(x).chain(m_inc) )
+    }
+  }
+}
+
 describe "CurryJS.Data.Collection" {
   {foldl, foldl1, foldr, foldr1, flatten} := C.Data.Collection;
 
