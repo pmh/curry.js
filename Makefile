@@ -1,12 +1,12 @@
 PATH  := node_modules/.bin:$(PATH)
 SHELL := /bin/bash
 
-.PHONY: watch compile
+.PHONY: watch build compile
 
 watch:
 	watchy -w lib,macros,spec -- make build
 
-build: lib/curry.js lib/adt-derivers.js macros/index.js spec/curry-spec.js
+build:
 	make compile
 	make test
 
