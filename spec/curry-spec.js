@@ -180,19 +180,19 @@ describe "CurryJS.Number.Sum" {
   { Sum, getSum } := C.Number.Sum;
 
   describe "empty :: Monoid a => a" {
-    it "uses 0 as the identity value" {
+    it "returns 0" {
       test "empty" { Sum(2).empty() =>= Sum(0) }
     }
   }
 
   describe "getSum :: Sum a -> a" {
-    it "extracts the number from the sum" {
+    it "returns the wrapped number" {
       test "getSum" { getSum(Sum(2)) }
     }
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
-    it "performs addition" {
+    it "returns a Sum containing the sum of two monoids" {
       test "concat" { Sum(2).concat(Sum(4)) =>= Sum(6) }
     }
 
@@ -208,6 +208,43 @@ describe "CurryJS.Number.Sum" {
 
       test "left identity" {
         Sum(1).empty().concat(Sum(1)) =>= Sum(1)
+      }
+    }
+  }
+}
+
+describe "CurryJS.Number.Product" {
+  { Product, getProduct } := C.Number.Product;
+
+  describe "empty :: Monoid a => a" {
+    it "returns 1" {
+      test "empty" { Product(2).empty() =>= Product(1) }
+    }
+  }
+
+  describe "getProduct :: Product a -> a" {
+    it "returns the wrapped number" {
+      test "getProduct" { getProduct(Product(2)) }
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+    it "returns a Product() containing the product of the two monoids" {
+      test "concat" { Product(2).concat(Product(4)) =>= Product(8) }
+    }
+
+    it "satisfies the monoid laws" {
+      test "associativity" {
+        Product(1).concat(Product(2)).concat(Product(3)) =>=
+          Product(1).concat(Product(2).concat(Product(3)))
+      }
+
+      test "right identity" {
+        Product(1).concat(Product(1).empty()) =>= Product(1)
+      }
+
+      test "left identity" {
+        Product(1).empty().concat(Product(1)) =>= Product(1)
       }
     }
   }
