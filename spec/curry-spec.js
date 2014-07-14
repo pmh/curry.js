@@ -287,6 +287,43 @@ describe "CurryJS.Number.Max" {
   }
 }
 
+describe "CurryJS.Number.Min" {
+  { Min, getMin } := C.Number.Min;
+
+  describe "empty :: Monoid a => a" {
+    it "returns 1" {
+      test "empty" { Min(2).empty() =>= Min(Infinity) }
+    }
+  }
+
+  describe "getMin :: Min a -> a" {
+    it "returns the wrapped number" {
+      test "getMin" { getMin(Min(2)) == 2 }
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+    it "returns a Min containing the smallest value" {
+      test "concat" { Min(2).concat(Min(4)) =>= Min(2) }
+    }
+
+    it "satisfies the monoid laws" {
+      test "associativity" {
+        Min(1).concat(Min(2)).concat(Min(3)) =>=
+          Min(1).concat(Min(2).concat(Min(3)))
+      }
+
+      test "right identity" {
+        Min(1).concat(Min(1).empty()) =>= Min(1)
+      }
+
+      test "left identity" {
+        Min(1).empty().concat(Min(1)) =>= Min(1)
+      }
+    }
+  }
+}
+
 describe "CurryJS.Data.Option" {
   { map                } := C.Control.Functor;
   { Option, Some, None } := C.Data.Option;
