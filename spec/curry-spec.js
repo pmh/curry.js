@@ -187,12 +187,12 @@ describe "CurryJS.Number.Sum" {
 
   describe "getSum :: Sum a -> a" {
     it "returns the wrapped number" {
-      test "getSum" { getSum(Sum(2)) }
+      test "getSum" { getSum(Sum(2)) == 2 }
     }
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
-    it "returns a Sum containing the sum of two monoids" {
+    it "returns a Sum containing the sum of the values" {
       test "concat" { Sum(2).concat(Sum(4)) =>= Sum(6) }
     }
 
@@ -224,12 +224,12 @@ describe "CurryJS.Number.Product" {
 
   describe "getProduct :: Product a -> a" {
     it "returns the wrapped number" {
-      test "getProduct" { getProduct(Product(2)) }
+      test "getProduct" { getProduct(Product(2)) == 2 }
     }
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
-    it "returns a Product() containing the product of the two monoids" {
+    it "returns a Product containing the product of the values" {
       test "concat" { Product(2).concat(Product(4)) =>= Product(8) }
     }
 
@@ -245,6 +245,43 @@ describe "CurryJS.Number.Product" {
 
       test "left identity" {
         Product(1).empty().concat(Product(1)) =>= Product(1)
+      }
+    }
+  }
+}
+
+describe "CurryJS.Number.Max" {
+  { Max, getMax } := C.Number.Max;
+
+  describe "empty :: Monoid a => a" {
+    it "returns 1" {
+      test "empty" { Max(2).empty() =>= Max(-Infinity) }
+    }
+  }
+
+  describe "getMax :: Max a -> a" {
+    it "returns the wrapped number" {
+      test "getMax" { getMax(Max(2)) == 2 }
+    }
+  }
+
+  describe "concat :: Monoid a => a -> a -> a" {
+    it "returns a Max containing the largest value" {
+      test "concat" { Max(2).concat(Max(4)) =>= Max(4) }
+    }
+
+    it "satisfies the monoid laws" {
+      test "associativity" {
+        Max(1).concat(Max(2)).concat(Max(3)) =>=
+          Max(1).concat(Max(2).concat(Max(3)))
+      }
+
+      test "right identity" {
+        Max(1).concat(Max(1).empty()) =>= Max(1)
+      }
+
+      test "left identity" {
+        Max(1).empty().concat(Max(1)) =>= Max(1)
       }
     }
   }
