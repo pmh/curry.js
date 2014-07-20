@@ -1,11 +1,30 @@
 // Sparkler code copied from https://github.com/natefaubion/sparkler/blob/master/macros/index.js
 // since I couldn't find any way to acces the match macro from a separate module.
 
+macro (->) {
+  rule infix { $a:ident | { $body ... } } => {
+    function($a) { $body ... }
+  }
+  rule infix { ($a:ident (,) ...) | { $body ... } } => {
+    function($a (,) ...) { $body ... }
+  }
+  rule infix { $a:ident | $body:expr } => {
+    function($a) { return $body }
+  }
+  rule infix { ($a:ident (,) ...) | $body:expr } => {
+    function($a (,) ...) { return $body }
+  }
+}
+
 macro $sparkler__compile {
-  case { $$mac $ctx $name { $body ... } } => {
+  case { $$mac $ctx $name ($args ...) { $body ... } } => {
     var ctx = #{ $ctx };
     var here = #{ here };
     var fnName = #{ $name };
+    var matchStmt = false;
+    var matchArgs = #{ $args ... }.map(function(a) {
+      return a.expose().token.inner[0].expose().token.inner;
+    });
 
     function input(stx, state) {
       var pos = 0;
@@ -111,9 +130,7 @@ macro $sparkler__compile {
       return o;
     }
     function constant(x) {
-      return function() {
-        return x;
-      };
+      return () -> x;
     }
     function assert(cond, msg) {
       if (!cond) throw new Error('Assertion failure: ' + msg);
@@ -129,9 +146,7 @@ macro $sparkler__compile {
     }
     function join(j, arr) {
       if (!arr.length) return [];
-      return arr.reduce(function(a, b) {
-        return a.concat(j, b);
-      });
+      return arr.reduce((a, b) -> a.concat(j, b));
     }
     function matchesToken(tmpl, t) {
       if (t && t.length === 1) t = t[0];
@@ -173,9 +188,10 @@ macro $sparkler__compile {
       if (!ctx) ctx = here;
       return [makeIdent('r' + (refId++), ctx)];
     }
-    function makeAssign(ident, rhs, ctx) {
+    function makeAssign(kw, ident, rhs, ctx) {
       if (!ctx) ctx = here;
-      return [makeKeyword('var', ctx), ident].concat(
+      return (kw || [makeKeyword('var', ctx)]).concat(
+        ident,
         rhs ? [makePunc('=', ctx)].concat(rhs) : [],
         makePunc(';', ctx)
       );
@@ -185,7 +201,7 @@ macro $sparkler__compile {
         var stx = [];
         for (var i = 0, s; s = arr[i]; i++) {
           if (s.token.type === T.Delimiter) {
-            var clone = cloneSyntax(s);
+            var clone = cloneSyntax(s.expose());
             s.token.inner = traverse(s.token.inner);
             stx.push(s);
           } else if (s.token.type === T.Identifier && 
@@ -201,8 +217,7 @@ macro $sparkler__compile {
     }
     function cloneSyntax(stx) {
       function F(){}
-      F.prototype = stx.prototype;
-      F.prototype.constructor = stx.prototype.constructor;
+      F.prototype = stx.__proto__;
       var s = new F();
       extend(s, stx);
       s.token = extend({}, s.token);
@@ -213,38 +228,31 @@ macro $sparkler__compile {
       this.args = args;
     }
     Data.prototype = {
-      unapply: function(f) {
-        return f ? f.apply(null, this.args) : this.args.slice();
-      },
-      equals: function(that) {
-        return equalsTag.call(this, that)
-            && this.args.every(function(a, i) { return equals(a, that.args[i]) });
-      }
+      unapply : f    -> f ? f.apply(null, this.args) : this.args.slice(),
+      equals  : that -> equalsTag.call(this, that) && arrayEquals(this.args, that.args)
     };
     function data(t, fs, proto) {
-      var D = function(){};
+      var D = () -> {};
       D.prototype = Data.prototype;
-      var Ctr = function(args) {
+      var Ctr = args -> {
         Data.call(this, t, args);
       };
       Ctr.prototype = new D();
       Ctr.prototype.constructor = Ctr;
       Ctr.prototype['is' + t] = true;
       extend(Ctr.prototype, proto || {});
-      fs.forEach(function(f, i) {
+      fs.forEach((f, i) -> {
         Object.defineProperty(Ctr.prototype, f, {
           writeable: false,
           configurable: false,
-          get: function() {
-            return this.args[i];
-          }
+          get: () -> this.args[i]
         });
       });
       var arity = fs.length;
-      return arity === 0 ? function() { return new Ctr([]) }
-           : arity === 1 ? function(x) { return new Ctr([x]) }
-           : arity === 2 ? function(x, y) { return new Ctr([x, y]) }
-           : function() {
+      return arity === 0 ? () -> new Ctr([])
+           : arity === 1 ? (x) -> new Ctr([x])
+           : arity === 2 ? (x, y) -> new Ctr([x, y])
+           : () -> {
                var args = Array(arguments.length);
                for (var i = 0; i < arguments.length; i++) {
                  args[i] = arguments[i];
@@ -253,6 +261,7 @@ macro $sparkler__compile {
              };
     }
     var Fun        = data('Fun',        ['length']);
+    var Match      = data('Match',      ['length']);
     var Args       = data('Args',       []);
     var Arr        = data('Arr',        []);
     var Unapply    = data('Unapply',    []);
@@ -277,15 +286,12 @@ macro $sparkler__compile {
     var Case       = data('Case',       []);
     var Guard      = data('Guard',      [], { equals: constant(false) });
     var Body       = data('Body',       [], { equals: constant(false) });
+    var Backtrack  = data('Backtrack',  []);
+    var NoMatch    = data('NoMatch',    []);
     var Branch     = data('Branch',     ['node', 'branches']);
     var Leaf       = data('Leaf',       ['node']);
     var Ann        = data('Ann',        ['value', 'ann'], { equals: equalsFst });
     var Group      = data('Group',      ['node', 'matrix', 'stack']);
-    var Frame      = data('Frame',      ['matrix', 'level'], { concat: frameConcat });
-    function frameConcat(b) {
-      assert(this.level === b.level, 'Frame levels must match');
-      return Frame(this.matrix.concat(b.matrix), this.level);
-    }
     function equalsTag(that) {
       return that && that.tag === this.tag;
     }
@@ -297,8 +303,9 @@ macro $sparkler__compile {
       var res = [];
       var toks, opt;
       while (inp.length) {
-        if (inp.peek()[0].userCode) {
-          res.push(inp.take()[0]);
+        if (inp.peek(USERCODE)) {
+          res.push.apply(res, inp.take(2)[1].token.inner);
+          break;
         } else if (toks = inp.takeAPeek({ type: T.Keyword }, PARENS, BRACES)) {
           if (matchesToken(IF, toks[0])) {
             opt = optimizeIfs(toks);
@@ -366,6 +373,10 @@ macro $sparkler__compile {
     var FOR        = { type: T.Keyword,    value: 'for' };
     var RETURN     = { type: T.Keyword,    value: 'return' };
     var CONTINUE   = { type: T.Keyword,    value: 'continue' };
+    var VAR        = { type: T.Keyword,    value: 'var' };
+    var LET        = { type: T.Keyword,    value: 'let' };
+    var CONST      = { type: T.Keyword,    value: 'const' };
+    var DEFAULT    = { type: T.Keyword,    value: 'default' };
     var BRACKETS   = { type: T.Delimiter,  value: '[]' };
     var PARENS     = { type: T.Delimiter,  value: '()' };
     var BRACES     = { type: T.Delimiter,  value: '{}' };
@@ -375,11 +386,15 @@ macro $sparkler__compile {
     var STRING     = { type: T.StringLiteral };
     var NUMBER     = { type: T.NumericLiteral };
     var PUNC       = { type: T.Punctuator };
+    var USERCODE   = { type: T.Identifier, value: '$sparkler__user__' + __fresh() };
     function parse(stx) {
       var inp = input(stx);
       var cases = [];
       var patts = [];
       var i = 0;
+      if (inp.peek(CASE) || inp.peek(DEFAULT)) {
+        matchStmt = true;
+      }
       while (inp.length) {
         var list = scanArgumentList(inp);
         var first = list[0];
@@ -388,16 +403,13 @@ macro $sparkler__compile {
         var inp2 = input(list, { idents: [] });
         var args = parseArgumentList(inp2);
         if (!guard.length) {
-          if (patts.some(function(p) { return p.equals(args) })) {
+          if (patts.some(p -> p.equals(args))) {
             syntaxError(first, 'Duplicate case');
           } else {
             patts.push(args);
           }
         }
-        body.forEach(function(b) {
-          b.userCode = true;
-        });
-        cases.push(args.unapply(function(v, bs) {
+        cases.push(args.unapply((v, bs) -> {
           var b = Leaf(Ann(Body(), { stx: body, stashed: inp2.state.idents }));
           var g = guard.length
             ? Branch(Ann(Guard(), { stx: guard, stashed: inp2.state.idents }), [b])
@@ -405,24 +417,44 @@ macro $sparkler__compile {
           return Branch(Ann(Case(), { index: i++ }), [Branch(v, bs), g]);
         }));
       }
-      var len = Math.max.apply(null, cases.map(function(c) {
-        return c.branches[0].node.ann.length;
-      }));
-      cases.forEach(function(c) {
+      var len = Math.max.apply(null, cases.map(c -> c.branches[0].node.ann.length));
+      var exh = cases.reduce((acc, c, i) -> {
         c.branches[0].node.ann.length = len;
-      });
-      return Branch(Ann(Fun(len), {}), cases);
+        return !acc && !c.branches[1].node.value.isGuard
+            && c.branches[0].branches.every(a -> a.branches[0].node.value.isWild);
+      }, false);
+      if (exh) {
+        cases[cases.length - 1].branches[1].node.ann.last = true;
+      } else {
+        cases.push(Branch(Ann(Case(), {}),
+                          [Branch(Ann(Args(), { length: len }),
+                                  [Branch(Ann(Arg(0), {}),
+                                          [Leaf(Ann(Wild(), {}))])]),
+                           Leaf(Ann(NoMatch(), {}))]));
+      }
+      return matchStmt
+        ? Branch(Ann(Match(len), { exhaustive: exh }), cases)
+        : Branch(Ann(Fun(len), { exhaustive: exh }), cases);
     }
     function scanArgumentList(inp) {
-      var res = inp.takeAPeek(PARENS);
+      var res;
+      if (matchStmt) {
+        res = inp.takeAPeek(CASE);
+        if (!res) {
+          res = inp.takeAPeek(DEFAULT);
+          if (res) return res;
+          syntaxError(res, null, 'maybe you meant case');
+        }
+      }
+      res = inp.takeAPeek(PARENS);
       if (res) {
-        if (inp.peek(IF) || inp.peek(ARROW)) return res[0].expose().token.inner;
+        if (inp.peek(IF) || (matchStmt ? inp.peek(COLON) : inp.peek(ARROW))) return res[0].expose().token.inner;
         if (inp.peek(EQ)) syntaxError(inp.take(), null, 'maybe you meant =>');
         throw syntaxError(inp.take());
       }
       res = [];
       while (inp.length) {
-        if (inp.peek(IF) || inp.peek(ARROW)) return res;
+        if (inp.peek(IF) || (matchStmt ? inp.peek(COLON) : inp.peek(ARROW))) return res;
         if (inp.peek(EQ)) syntaxError(inp.take(), null, 'maybe you meant =>');
         if (inp.peek(COMMA)) syntaxError(inp.take(), null, 'multiple parameters require parens');
         res.push(inp.take()[0]);
@@ -435,7 +467,7 @@ macro $sparkler__compile {
       if (!tok) return [];
       var res = [];
       while (inp.length) {
-        if (inp.peek(ARROW)) {
+        if (matchStmt ? inp.peek(COLON) : inp.peek(ARROW)) {
           if (!res.length) syntaxError(tok, 'Guard required');
           return res;
         }
@@ -448,15 +480,19 @@ macro $sparkler__compile {
       inp.take(1);
       var res = inp.takeAPeek(BRACES);
       if (res) {
-        inp.takeAPeek(COMMA);
-        return forceReturn(res[0].expose().token.inner);
+        if (matchStmt) {
+          return res[0].expose().token.inner;
+        } else {
+          inp.takeAPeek(COMMA);
+          return forceReturn(res[0].expose().token.inner);
+        }
       }
       res = [];
       while (inp.length) {
-        if (inp.takeAPeek(COMMA)) break;
+        if (matchStmt ? inp.peek(CASE) || inp.peek(DEFAULT) : inp.takeAPeek(COMMA)) break;
         res.push(inp.take(1)[0]);
       }
-      return prependReturn(res);
+      return matchStmt ? res : prependReturn(res);
     }
     function parseArgumentList(inp) {
       if (!inp.length) {
@@ -464,8 +500,15 @@ macro $sparkler__compile {
                       [Branch(Ann(Arg(0), {}),
                               [Leaf(Ann(Unit(), {}))])]);
       }
+      var res = inp.takeAPeek(DEFAULT);
+      if (res) {
+        if (inp.length) syntaxError(inp.take());
+        return Branch(Ann(Args(), { length: 0 }),
+                      [Branch(Ann(Arg(0), {}),
+                              [Leaf(Ann(Wild(), {}))])]);
+      }
       var len = 0;
-      var args = parseRestPatterns(inp).map(function(p, i, ps) {
+      var args = parseRestPatterns(inp).map((p, i, ps) -> {
         if (p.node.value.isRest) {
           if (i === ps.length - 1) {
             p.node.ann.argRest = true;
@@ -502,7 +545,7 @@ macro $sparkler__compile {
         var len = inp.state.idents.length;
         var patt = parsePattern(inp);
         var idents = inp.state.idents.slice(len);
-        var names = idents.map(unwrapSyntax);
+        var names = idents.map(id -> unwrapSyntax(id.ident));
         return Leaf(Ann(Rest(patt || Leaf(Ann(Wild(), {})), names),
                         { stx: res, stashed: inp.state.idents.slice(len) }));
       }
@@ -558,7 +601,7 @@ macro $sparkler__compile {
         var inp2 = input(stx[0].expose().token.inner, inp.state);
         var inner = parseRestPatterns(inp2)
         var len = arrayLen(inner);
-        var withIndex = inner.reduce(function(acc, p, i, arr) {
+        var withIndex = inner.reduce((acc, p, i, arr) -> {
           var ann = {}, pann, stop, node;
           if (p.node.value.isRest) {
             if (i === 0) {
@@ -596,9 +639,7 @@ macro $sparkler__compile {
     function parseUnapplyObj(inp) {
       var res = parseObjectLike(UnapplyObj, inp);
       if (res) {
-        res.branches.forEach(function(b) {
-          b.node.ann.hasOwn = true;
-        });
+        res.branches.forEach(b -> b.node.ann.hasOwn = true);
         return res;
       }
     }
@@ -626,7 +667,7 @@ macro $sparkler__compile {
           syntaxError(inp.take(), null, 'not a pattern');
         }
         if (matchesToken(IDENT, tok)) {
-          inp.state.idents.push(tok[0]);
+          inp.state.idents.push({ ident: tok[0] });
           return Branch(Ann(KeyIn(name), ann),
                         [Branch(Ann(KeyVal(name), ann),
                                 [Leaf(Ann(Wild(), { idents: [tok[0]] }))])]);
@@ -635,23 +676,33 @@ macro $sparkler__compile {
       }
     }
     function parseBinder(inp) {
+      var kw = inp.takeAPeek(VAR) || inp.takeAPeek(LET) || inp.takeAPeek(CONST);
       var res = inp.takeAPeek(IDENT, AT);
       if (res) {
         var patt = parsePattern(inp);
         if (patt) {
-          inp.state.idents.push(res[0]);
+          inp.state.idents.push({
+            ident: [res[0]],
+            keyword: kw,
+          });
           patt.node.ann.idents = [res[0]];
           return patt;
         }
         syntaxError(inp.take(), null, 'not a pattern');
       }
+      if (kw) inp.back();
     }
     function parseIdentifier(inp) {
-      var res = inp.takeAPeek({ type: T.Identifier });
+      var kw = inp.takeAPeek(VAR) || inp.takeAPeek(LET) || inp.takeAPeek(CONST);
+      var res = inp.takeAPeek(IDENT);
       if (res) {
-        inp.state.idents.push(res[0]);
-        return Leaf(Ann(Wild(), { idents: [res[0]] }));
+        inp.state.idents.push({
+          ident: res,
+          keyword: kw
+        });
+        return Leaf(Ann(Wild(), { idents: res }));
       }
+      if (kw) inp.back();
     }
     function commaSeparated(parser, inp, cb) {
       var all = [], res;
@@ -671,7 +722,7 @@ macro $sparkler__compile {
     function multiRestCallback() {
       var count = 0;
       return function(res, inp) {
-        return res.unapply(function(v, ann) {
+        return res.unapply((v, ann) -> {
           if (v.tag === 'Rest' && count++) {
             syntaxError(ann.stx, 'Multiple ...s are not allowed');
           }
@@ -680,7 +731,7 @@ macro $sparkler__compile {
       }
     }
     function arrayLen(bs) {
-      var ctr = bs.reduce(function(ctr, b) {
+      var ctr = bs.reduce((ctr, b) -> {
         return b.node.value.isRest
           ? [LenMin, ctr[1]]
           : [ctr[0], ctr[1] + 1]
@@ -691,63 +742,88 @@ macro $sparkler__compile {
       return compilePattern(astToTree(ast), environment({ refs: {} }), []);
     }
     function astToTree(ast) {
-      var level = 2;
-      var cases = ast.branches.map(function(b) { return [b.branches[0]] });
-      var frame = ast.branches.map(function(b) { return [b.branches[1]] });
-      var gr = groupRows(cases, [Frame(frame, 0)], level);
-      return Branch(ast.node, [transformCase(gr[0].node, gr[0].matrix, gr[0].stack, level)]);
+      var cases = ast.branches.map(b -> [annotateLevels(b.branches[0], 0)]);
+      var frame = ast.branches.map(b -> [b.branches[1]]);
+      var gr = groupRows(cases, [frame]);
+      return Branch(ast.node, [transformCase(gr[0].node, gr[0].matrix, gr[0].stack)]);
     }
-    function transformCase(c, m, stack, level) {
-      c.ann.level = level;
+    function annotateLevels(ast, l) {
+      ast.node.ann.level = l;
+      if (ast.branches) {
+        ast.branches.forEach(b -> annotateLevels(b, l + 1));
+      }
+      return ast;
+    }
+    function transformCase(c, m, stack) {
       if (!stack.length) {
         return m.length
           ? Branch(c, m.reduce(concat))
           : Leaf(c);
       }
-      var nl = level + 1;
       var gr;
       if (!m.length) {
-        nl = stack[0].level;
-        gr = groupRows(stack[0].matrix, stack.slice(1), stack[0].level);
+        gr = groupRows(stack[0], stack.slice(1));
       } else if (isMatrixType(c.value)) {
-        gr = groupRows(scoreMatrix(normalizeMatrix(c, m)), stack, level);
+        gr = groupRows(scoreMatrix(normalizeMatrix(c, m)), stack);
       } else {
-        gr = groupRows(m, stack, level);
+        gr = groupRows(m, stack);
       }
-      var head = transformCase(gr[0].node, gr[0].matrix, gr[0].stack, nl);
-      var rest = gr[1].length && transformCase(c, gr[1], gr[2], level).branches || [];
-      return Branch(c, [head].concat(rest).reduceRight(function(acc, c) {
-        if (acc.length && acc[0].node.equals(c.node)) {
-          acc[0] = Branch(mergeNodes(c.node, acc[0].node), c.branches.concat(acc[0].branches));
-        } else {
-          acc.unshift(c);
-        }
-        return acc;
-      }, []));
+      var head = transformCase(gr[0].node, gr[0].matrix, gr[0].stack);
+      var rest = gr[1].length && transformCase(c, gr[1], gr[2]).branches || [];
+      var cons = [head].concat(rest);
+      return Branch(c, matchStmt
+                       ? mergeBranchesWithBacktrack(cons)
+                       : mergeBranches(cons));
     }
-    function groupRows(m, stack, level) {
+    function groupRows(m, stack) {
       function rowHeadStack(r, s) {
-        return r.length === 1 ? s : [Frame([r.slice(1)], level)].concat(s);
+        return r.length === 1 ? s : [[r.slice(1)]].concat(s);
       }
       var head = m[0];
       var rest = m.slice(1);
       var init = Group(head[0].node,
                        head[0].branches ? [head[0].branches] : [],
                        rowHeadStack(head, stackRow(stack, 0)));
-      return rest.reduce(function(acc, r, i) {
+      return rest.reduce((acc, r, i) -> {
         var g = acc[0];
         var c = r[0];
         if (!acc[1].length && canGroupCases(head[0], c)) {
-          var n = mergeNodes(g.node, c.node);
-          var m = c.branches ? g.matrix.concat([c.branches]) : g.matrix;
-          var s = stackZip(g.stack, rowHeadStack(r, stackRow(stack, i + 1)));
-          acc[0] = Group(n, m, s);
+          acc[0] = Group(mergeNodes(g.node, c.node),
+                         c.branches ? g.matrix.concat([c.branches]) : g.matrix,
+                         stackZip(g.stack, rowHeadStack(r, stackRow(stack, i + 1))));
         } else {
           acc[1].push(r);
           acc[2] = stackZip(acc[2], stackRow(stack, i + 1));
         }
         return acc;
       }, [init, [], []]);
+    }
+    function mergeBranches(bs) {
+      return bs.reduceRight((acc, c) -> {
+        if (acc.length && acc[0].node.equals(c.node)) {
+          acc[0] = Branch(mergeNodes(c.node, acc[0].node),
+                          c.branches.concat(acc[0].branches));
+        } else {
+          acc.unshift(c);
+        }
+        return acc;
+      }, []);
+    }
+    function mergeBranchesWithBacktrack(bs) {
+      return bs.reduceRight((acc, c, i) -> {
+        var head = acc[0];
+        if (head && c.node.equals(head.node)) {
+          acc[0] = Branch(mergeNodes(c.node, head.node),
+                          c.branches.concat(Branch(Ann(Backtrack(), {}), head.branches)));
+        } else if (head) {
+          acc[0] = Branch(c.node,
+                          c.branches.concat(Branch(Ann(Backtrack(), {}),
+                                                   [Branch(head.node, head.branches)])));
+        } else {
+          acc.unshift(c);
+        }
+        return acc;
+      }, []);
     }
     function mergeNodes(c1, c2) {
       return Ann(c1.value,
@@ -782,8 +858,8 @@ macro $sparkler__compile {
       UnapplyObj : normalizeObj,
       Len        : normalizeNoop,
       LenMin     : normalizeNoop,
-      Args: function(n, m) {
-        var max = Math.max.apply(null, m.map(function(r) { return r.length }));
+      Args: (n, m) -> {
+        var max = Math.max.apply(null, m.map(r -> r.length));
         return normalizeVarLen(max, Arg, m)
       }
     };
@@ -791,26 +867,26 @@ macro $sparkler__compile {
       return m;
     }
     function normalizeObj(n, m) {
-      var layout = m.reduceRight(function(acc, r) {
-        return r.reduce(function(a, c) {
+      var layout = m.reduceRight((acc, r) -> {
+        return r.reduce((a, c) -> {
           a[0][0].keys[c.node.value.key] = true;
           a[1][c.node.value.key] = true;
           return a;
         }, [[{ keys: {}, row: r }].concat(acc[0]), acc[1]]);
       }, [[], {}]);
-      return layout[0].map(function(r) {
-        Object.keys(layout[1]).forEach(function(k) {
+      return layout[0].map(r -> {
+        Object.keys(layout[1]).forEach(k -> {
           if (!r.keys[k]) r.row.push(Leaf(Ann(KeyNoop(k), {})));
         });
         return r.row.sort(sortObjKeys);
       });
     }
     function normalizeVarLen(len, ctr, m) {
-      return m.map(function(r) {
+      return m.map(r -> {
         if (r.length >= len) {
           return r;
         } else {
-          return r.concat(repeat(len - r.length, function(i) {
+          return r.concat(repeat(len - r.length, i -> {
             return Leaf(Ann(ctr(r.length - i + 1), {}));
           }));
         }
@@ -822,9 +898,7 @@ macro $sparkler__compile {
       return a < b ? -1 : b < a ? 1 : 0;
     }
     function scoreMatrix(m) {
-      var scores = m.map(function(c) {
-        return c.map(scorePattern);
-      });
+      var scores = m.map(c -> c.map(scorePattern));
       var ranks = [];
       for (var i = 0; i < scores[0].length; i++) {
         var s = 0;
@@ -842,11 +916,7 @@ macro $sparkler__compile {
           }
         }
       }
-      return m.map(function(c) {
-        return ranks.map(function(r) {
-          return c[r[1]];
-        });
-      });
+      return m.map(c -> ranks.map(r -> c[r[1]]));
     }
     function scorePattern(p) {
       var t = p.node.value.tag;
@@ -863,16 +933,12 @@ macro $sparkler__compile {
       IndexNoop : scoreChild,
     };
     function stackRow(stack, i) {
-      return stack.map(function(f) {
-        return Frame([f.matrix[i]], f.level);
-      });
+      return stack.map(m -> [m[i]]);
     }
     function stackZip(s1, s2) {
       if (!s1.length) return s2;
       if (!s2.length) return s1;
-      return s1.map(function(f, i) {
-        return f.concat(s2[i]);
-      });
+      return s1.map((m, i) -> m.concat(s2[i]));
     }
     function compilePattern(t, env, stack) {
       var n = t.node;
@@ -880,68 +946,94 @@ macro $sparkler__compile {
       if (t.isBranch) {
         var c = branchCompilers[n.value.tag] || assert(false, 'Unexpected node: ' + n.value.tag);
         var r = stack[stack.length - 1];
-        var cont = function(e, r2) {
+        var cont = (e, r2) -> {
           var s = stack.concat([r2 || r]);
-          return bs.reduce(function(stx, b) {
+          return bs.reduce((stx, b, i) -> {
             var l = b.node.ann.level;
             return stx.concat(compilePattern(b, e, s.slice(0, l)));
           }, []);
         };
         if (n.ann.idents && n.ann.idents.length) {
-          env = n.ann.idents.reduce(function(e, id) {
+          env = n.ann.idents.reduce((e, id) -> {
             return e.stash(unwrapSyntax(id), r);
           }, env);
         }
         return c.apply(null, n.value.unapply().concat(n.ann, [r], env, cont, [bs]));
       } else {
-        var c = leafCompilers[n.value.tag] || assert(false, 'Unexpected leaf: ' + n.value.tag);  
+        var c = leafCompilers[n.value.tag] || assert(false, 'Unexpected leaf: ' + n.value.tag);
         return c.apply(null, n.value.unapply().concat(n.ann, env));
       }
     }
     var branchCompilers = {
-      Fun: function(len, ann, _, env, cont) {
+      Fun: (len, ann, _, env, cont) -> {
         var env2 = env.set({
-          argIdents: repeat(len, function(i) {
-            return [makeIdent('a' + i, here)];
-          })
+          argIdents: repeat(len, i -> [makeIdent('a' + i, here)])
         });
-        var body = cont(env2);
-        var err = #{ throw new TypeError('No match') };
         letstx $name = unwrapSyntax(fnName) === 'anonymous' ? [] : fnName,
                $args = join(makePunc(',', here), env2.argIdents),
-               $code = optimizeSyntax(body.concat(err));
-        return #{ 
-          function $name ($args) { $code }
+               $code = optimizeSyntax(cont(env2));
+        if (matchArgs.length) {
+          letstx $params = join(makePunc(',', here), matchArgs);
+          return #{
+            function $name ($args) { $code }.call(this, $params)
+          }
+        } else {
+          return #{
+            function $name ($args) { $code }
+          }
+        }
+      },
+      Match: (len, ann, _, env, cont) -> {
+        var bref = makeRef();
+        var args = matchArgs.reduce((acc, a) -> {
+          if (a.length === 1 && a[0].token.type === T.Identifier) {
+            acc[0].push(a);
+          } else {
+            var ref = makeRef();
+            acc[1] = makeAssign(null, ref[0], a).concat(acc[1]);
+            acc[0].push(ref);
+          }
+          return acc;
+        }, [[], []]);
+        var env2 = env.set({ argIdents: args[0], backtrackRef: bref });
+        var body = cont(env2);
+        letstx $top = args[1],
+               $ref = bref,
+               $bod = optimizeSyntax(body);
+        return #{
+          var $ref = 1;
+          $top
+          $bod
         }
       },
       Args: compileNoop,
-      Arg: function(i, ann, _, env, cont) {
+      Arg: (i, ann, _, env, cont) -> {
         return cont(env, env.argIdents[i]);
       },
-      Unit: function(ann, _, env, cont) {
+      Unit: (ann, _, env, cont) -> {
         letstx $bod = cont(env);
         return #{
           if (arguments.length === 0) { $bod }
         }
       },
       Wild: compileNoop,
-      Undef: function(ann, ref, env, cont) {
+      Undef: (ann, ref, env, cont) -> {
         letstx $ref = ref,
                $bod = cont(env);
         return #{
           if ($ref === void 0) { $bod }
         }
       },
-      Lit: function(v, ann, ref, env, cont) {
+      Lit: (v, ann, ref, env, cont) -> {
         letstx $ref = ref,
                $lit = ann.stx,
                $bod = cont(env);
-        return #{ 
+        return #{
           if ($ref === $lit) { $bod }
         }
       },
       Extractor: compileNoop,
-      Inst: function(ann, ref, env, cont) {
+      Inst: (ann, ref, env, cont) -> {
         if (natives.hasOwnProperty(ann.name)) {
           letstx $test = natives[ann.name](ref, env),
                  $bod = cont(env);
@@ -953,13 +1045,13 @@ macro $sparkler__compile {
                  $cls = ann.extractor,
                  $bod = cont(env);
           return #{
-            if ($cls.hasInstance 
+            if ($cls.hasInstance
                 ? $cls.hasInstance($ref)
                 : $ref instanceof $cls) { $bod }
           }
         }
       },
-      Unapply: function(ann, ref, env, cont) {
+      Unapply: (ann, ref, env, cont) -> {
         var ref2 = makeRef();
         letstx $ref = ref,
                $new = ref2,
@@ -970,7 +1062,7 @@ macro $sparkler__compile {
           if ($new != null) { $bod }
         }
       },
-      UnapplyObj: function(ann, ref, env, cont) {
+      UnapplyObj: (ann, ref, env, cont) -> {
         var ref2 = makeRef();
         letstx $ref = ref,
                $new = ref2,
@@ -981,14 +1073,14 @@ macro $sparkler__compile {
           if ($new != null) { $bod }
         }
       },
-      Arr: function(ann, ref, env, cont) {
+      Arr: (ann, ref, env, cont) -> {
         letstx $test = natives.Array(ref, env),
                $bod = cont(env, ref);
         return #{
           if ($test) { $bod }
         }
       },
-      Len: function(len, ann, ref, env, cont) {
+      Len: (len, ann, ref, env, cont) -> {
         letstx $len = [makeValue(len, here)],
                $ref = ref,
                $bod = cont(env);
@@ -996,7 +1088,7 @@ macro $sparkler__compile {
           if ($ref.length === $len) { $bod }
         }
       },
-      LenMin: function(len, ann, ref, env, cont) {
+      LenMin: (len, ann, ref, env, cont) -> {
         letstx $len = [makeValue(len, here)],
                $ref = ref,
                $bod = cont(env);
@@ -1004,7 +1096,7 @@ macro $sparkler__compile {
           if ($ref.length >= $len) { $bod }
         }
       },
-      Index: function(i, ann, ref, env, cont, bs) {
+      Index: (i, ann, ref, env, cont, bs) -> {
         var index = i >= 0
           ? [makeValue(i, here)]
           : ref.concat(makePunc('.', here),
@@ -1029,7 +1121,7 @@ macro $sparkler__compile {
         }
       },
       IndexNoop: compileNoop,
-      Obj: function(ann, ref, env, cont) {
+      Obj: (ann, ref, env, cont) -> {
         var ref2 = makeRef();
         letstx $ref = ref,
                $new = ref2,
@@ -1041,7 +1133,7 @@ macro $sparkler__compile {
           }
         }
       },
-      KeyIn: function(key, ann, ref, env, cont) {
+      KeyIn: (key, ann, ref, env, cont) -> {
         letstx $ref = ref,
                $key = [makeValue(key, here)],
                $bod = cont(env);
@@ -1055,7 +1147,7 @@ macro $sparkler__compile {
           }
         }
       },
-      KeyVal: function(key, ann, ref, env, cont, bs) {
+      KeyVal: (key, ann, ref, env, cont, bs) -> {
         if (bs.length === 1 && bs[0].node.value.isWild) {
           if (!bs[0].node.ann.idents || !bs[0].node.ann.idents.length) {
             return cont(env);
@@ -1074,9 +1166,9 @@ macro $sparkler__compile {
         }
       },
       KeyNoop: compileNoop,
-      Rest: function(pattern, names, ann, ref, env, cont) {
-        var refs = ann.stashed.reduce(function(acc, id) {
-          var k = unwrapSyntax(id);
+      Rest: (pattern, names, ann, ref, env, cont) -> {
+        var refs = ann.stashed.reduce((acc, id) -> {
+          var k = unwrapSyntax(id.ident);
           if (!acc[2].hasOwnProperty(k)) {
             acc[0].push(id);
             acc[1].push(makeRef());
@@ -1086,7 +1178,7 @@ macro $sparkler__compile {
         }, [[], [], {}]);
         var init = refs[1].length
           ? [makeKeyword('var', here)].concat(
-              join(makePunc(',', here), refs[1].map(function(r) {
+              join(makePunc(',', here), refs[1].map(r -> {
                 return r.concat(makePunc('=', here), makeDelim('[]', [], here));
               })),
               makePunc(';', here))
@@ -1106,11 +1198,11 @@ macro $sparkler__compile {
           }
         };
         var end = Leaf(Ann(RestEnd(), { stashed: refs[0], refs: refs[1] }));
-        var g = groupRows([[pattern]], [Frame([[end]], 0)], 1)[0];
+        var g = groupRows([[annotateLevels(pattern, 1)]], [[[end]]], 1)[0];
         var t = transformCase(g.node, g.matrix, g.stack, 1);
         var s = compilePattern(t, environment({ refs: {} }), [void 0, lref]);
-        var env2 = ann.stashed.reduce(function(e, id, i) {
-          return e.stash(unwrapSyntax(id), refs[1][i]);
+        var env2 = ann.stashed.reduce((e, id, i) -> {
+          return e.stash(unwrapSyntax(id.ident), refs[1][i]);
         }, env);
         letstx $init = init,
                $oref = oref,
@@ -1124,19 +1216,19 @@ macro $sparkler__compile {
                $bod = cont(env2);
         return #{
           $init
-          var $oref = true;
+          var $oref = 1;
           for (var $iref = $start, $sref = $stop, $lref; $iref < $sref; $iref++) {
             $lref = $aref[$iref];
             $inner
-            $oref = false;
+            $oref--;
             break;
           }
           if ($oref) { $bod }
         }
       },
-      Guard: function(ann, _, env, cont) {
-        var names = ann.stashed.reduce(function(acc, id) {
-          var k = unwrapSyntax(id);
+      Guard: (ann, _, env, cont) -> {
+        var names = ann.stashed.reduce((acc, id) -> {
+          var k = unwrapSyntax(id.ident);
           acc[k] = env.retrieve(k);
           return acc;
         }, {});
@@ -1145,19 +1237,37 @@ macro $sparkler__compile {
         return #{
           if ($test) { $bod }
         }
+      },
+      Backtrack: (ann, _, env, cont) -> {
+        letstx $bod = cont(env),
+               $ref = env.backtrackRef;
+        return #{
+          if ($ref) { $bod }
+        }
       }
     };
     var leafCompilers = {
-      Body: function(ann, env) {
-        var refs = join([], ann.stashed.map(function(id) {
-          return makeAssign(id, env.retrieve(unwrapSyntax(id)));
+      Body: (ann, env) -> {
+        var refs = join([], ann.stashed.map(id -> {
+          return makeAssign(id.keyword, id.ident, env.retrieve(unwrapSyntax(id.ident)));
         }));
-        return makeDelim('{}', refs.concat(ann.stx), here);
+        letstx $bod = refs.concat(ann.stx),
+               $user = [makeIdent(USERCODE.value, here)];
+        if (matchStmt && !ann.last) {
+          letstx $ref = env.backtrackRef;
+          return #{
+            if ($ref--) { $user { $bod } }
+          }
+        } else {
+          return #{
+            $user { $bod }
+          }
+        }
       },
-      RestEnd: function(ann, env) {
-        var refs = join([], ann.stashed.map(function(id, i) {
+      RestEnd: (ann, env) -> {
+        var refs = join([], ann.stashed.map((id, i) -> {
           letstx $arr = ann.refs[i],
-                 $ref = env.retrieve(unwrapSyntax(id));
+                 $ref = env.retrieve(unwrapSyntax(id.ident));
           return #{
             $arr[$arr.length] = $ref;
           }
@@ -1166,6 +1276,11 @@ macro $sparkler__compile {
         return #{
           $refs
           continue;
+        }
+      },
+      NoMatch: (ann, env) -> {
+        return #{
+          throw new TypeError('No match');
         }
       }
     };
@@ -1183,13 +1298,13 @@ macro $sparkler__compile {
       Date      : objTag('Date'),
       Math      : objTag('Math'),
       Object    : objTag('Object'),
-      Array: function(ref, env) {
+      Array: (ref, env) -> {
         letstx $ref = ref;
         return #{ Array.isArray
-                  ? Array.isArray($ref) 
+                  ? Array.isArray($ref)
                   : Object.prototype.toString.call($ref) === '[object Array]' };
       },
-      NaN: function(ref, env) {
+      NaN: (ref, env) -> {
         letstx $ref = ref;
         return #{ Number.isNaN
                   ? Number.isNaN($ref)
@@ -1197,7 +1312,7 @@ macro $sparkler__compile {
       }
     }
     function typeofAndObjTag(type, tag) {
-      return function(ref, env) {
+      return (ref, env) -> {
         letstx $type = [makeValue(type, here)],
                $str = [makeValue('[object ' + tag + ']', here)],
                $ref = ref;
@@ -1206,7 +1321,7 @@ macro $sparkler__compile {
       }
     }
     function objTag(tag) {
-      return function(ref, env) {
+      return (ref, env) -> {
         letstx $str = [makeValue('[object ' + tag + ']', here)],
                $ref = ref;
         return #{ Object.prototype.toString.call($ref) === $str };
@@ -1218,19 +1333,19 @@ macro $sparkler__compile {
 }
 
 let matcher = macro {
-  case { $ctx $op:expr { $body ... } } => {
+  case { $ctx ($op:expr, $rest:expr (,) ...) { $body ... } } => {
     return #{
-      ($sparkler__compile $ctx anonymous { $body ... }.call(this, $op))
+      $sparkler__compile $ctx anonymous (($op) $(($rest)) ...) { $body ... }
     }
   }
   case { $ctx ($op:expr) { $body ... } } => {
     return #{
-      ($sparkler__compile $ctx anonymous { $body ... }.call(this, $op))
+      $sparkler__compile $ctx anonymous (($op)) { $body ... }
     }
   }
-  case { $ctx ($op:expr, $rest:expr (,) ...) { $body ... } } => {
+  case { $ctx $op:expr { $body ... } } => {
     return #{
-      ($sparkler__compile $ctx anonymous { $body ... }.call(this, $op, $rest (,) ...))
+      $sparkler__compile $ctx anonymous (($op)) { $body ... }
     }
   }
   case { _ } => {
@@ -1299,7 +1414,6 @@ macro fun {
     return #{ fun $first.$rest (.) ... ($self,) -> $body }
   }
 
-
   case { _ $name:ident -> match ($match_args (,) ...) { $body ... } } => {
     return #{ fun $name () -> matcher ($match_args (,) ...) { $body ... } }
   }
@@ -1316,7 +1430,6 @@ macro fun {
     return #{ fun () -> $body }
   }
 }
-
 
 macro (:=) {
   rule infix { $lhs:ident | $expr:expr } => {
