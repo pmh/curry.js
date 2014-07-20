@@ -1,49 +1,49 @@
-var adt$2251 = require('adt-simple');
-var Curry$2252 = {
-        derive: adt$2251.eachVariant(function (v$2254, adt$2255) {
-            if (v$2254.fields && v$2254.fields.length) {
-                var ctr$2256 = v$2254.constructor, curried$2257 = ctr$2256.curry(v$2254.fields.length);
-                v$2254.constructor = curried$2257;
-                v$2254.constructor.prototype = ctr$2256.prototype;
-                v$2254.prototype.constructor = curried$2257;
-                if (adt$2255.constructor === ctr$2256) {
-                    adt$2255.constructor = v$2254.constructor;
-                    for (var k$2258 in ctr$2256) {
-                        if (ctr$2256.hasOwnProperty(k$2258)) {
-                            adt$2255.constructor[k$2258] = ctr$2256[k$2258];
+var adt$2271 = require('adt-simple');
+var Curry$2272 = {
+        derive: adt$2271.eachVariant(function (v$2274, adt$2275) {
+            if (v$2274.fields && v$2274.fields.length) {
+                var ctr$2276 = v$2274.constructor, curried$2277 = ctr$2276.curry(v$2274.fields.length);
+                v$2274.constructor = curried$2277;
+                v$2274.constructor.prototype = ctr$2276.prototype;
+                v$2274.prototype.constructor = curried$2277;
+                if (adt$2275.constructor === ctr$2276) {
+                    adt$2275.constructor = v$2274.constructor;
+                    for (var k$2278 in ctr$2276) {
+                        if (ctr$2276.hasOwnProperty(k$2278)) {
+                            adt$2275.constructor[k$2278] = ctr$2276[k$2278];
                         }
                     }
                 }
             }
         })
     };
-function unrollApply$2253(fn$2259, a$2260) {
-    switch (a$2260.length) {
+function unrollApply$2273(fn$2279, a$2280) {
+    switch (a$2280.length) {
     case 0:
-        return fn$2259();
+        return fn$2279();
     case 1:
-        return fn$2259(a$2260[0]);
+        return fn$2279(a$2280[0]);
     case 2:
-        return fn$2259(a$2260[0], a$2260[1]);
+        return fn$2279(a$2280[0], a$2280[1]);
     case 3:
-        return fn$2259(a$2260[0], a$2260[1], a$2260[2]);
+        return fn$2279(a$2280[0], a$2280[1], a$2280[2]);
     case 4:
-        return fn$2259(a$2260[0], a$2260[1], a$2260[2], a$2260[3]);
+        return fn$2279(a$2280[0], a$2280[1], a$2280[2], a$2280[3]);
     default:
-        return fn$2259.apply(null, a$2260);
+        return fn$2279.apply(null, a$2280);
     }
 }
 module.exports = {
-    Eq: adt$2251.Eq,
-    Clone: adt$2251.Clone,
-    Setter: adt$2251.Setter,
-    ToString: adt$2251.ToString,
-    ToJSON: adt$2251.ToJSON,
-    Curry: Curry$2252,
-    Extractor: adt$2251.Extractor,
-    Reflect: adt$2251.Reflect,
-    Cata: adt$2251.Cata,
-    LateDeriving: adt$2251.LateDeriving,
-    Base: adt$2251.composeDeriving(Curry$2252, adt$2251.Base)
+    Eq: adt$2271.Eq,
+    Clone: adt$2271.Clone,
+    Setter: adt$2271.Setter,
+    ToString: adt$2271.ToString,
+    ToJSON: adt$2271.ToJSON,
+    Curry: Curry$2272,
+    Extractor: adt$2271.Extractor,
+    Reflect: adt$2271.Reflect,
+    Cata: adt$2271.Cata,
+    LateDeriving: adt$2271.LateDeriving,
+    Base: adt$2271.composeDeriving(Curry$2272, adt$2271.Base)
 };
 //# sourceMappingURL=adt-derivers.js.map
