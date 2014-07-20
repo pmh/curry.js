@@ -1,7 +1,7 @@
 var C = require("../lib/curry");
 
 describe "CurryJS" {
-  { __, curry, compose } := C.Core;
+  { __, curry, compose, Protocol, instance } := C.Core;
 
   describe "curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))" {
 
@@ -42,6 +42,79 @@ describe "CurryJS" {
         compose(join("-"), map(upcase), split(" "))("foo bar baz") === "FOO-BAR-BAZ"
       }
     };
+  }
+
+  describe "Protocol :: String -> Object -> { String, String, (ADT -> Object -> undefined) }" {
+    it "should create a protocol with correct fields" {
+      specObj                  := { foo: 'bar' }
+      { name, spec, instance } := Protocol("MyProtocol", specObj);
+
+      test "name field" {
+        name == "MyProtocol"
+      }
+
+      test "spec field" {
+        spec == specObj
+      }
+
+      test "instance field" {
+        typeof(instance) == "function"
+      }
+    }
+  }
+
+  describe "instance :: Protocol -> ADT -> Object -> undefined" {
+    it "should should not overwrite existing fields" {
+      protocol = Protocol("MyProtocol", { constructor: { foo: fun () = "bar2" }, prototype: { bar: fun () = "baz2" } });
+      type     = { foo: fun () = "bar1", prototype: { bar: fun () = "baz1" } }
+
+      instance(protocol, type, {});
+
+      { foo } := type;
+      { bar } := type.prototype;
+
+      test "existing constructor fields" {
+        foo() == "bar1"
+      }
+
+      test "existing prototype fields" {
+        bar() == "baz1"
+      }
+    }
+
+    it "should copy over default implementations" {
+      protocol = Protocol("MyProtocol", { constructor: { foo: fun () = "bar" }, prototype: { bar: fun () = "baz" } });
+      type     = { prototype: { } }
+
+      instance(protocol, type, {});
+
+      { foo } := type;
+      { bar } := type.prototype;
+
+      test "default constructor implementations" {
+        foo() == "bar"
+      }
+
+      test "default prototype implementations" {
+        bar() == "baz"
+      }
+    }
+
+    it "should throw an error on missing implementations" {
+      protocol = Protocol("MyProtocol", { constructor: { foo: Protocol.required } });
+      type     = {}
+
+      test "missing constructor implementation" {
+        instance(protocol, type, {}) =!= "Error"
+      }
+
+      protocol = Protocol("MyProtocol", { prototype: { foo: Protocol.required } });
+      type     = { prototype: { } }
+
+      test "missing prototype implementation" {
+        instance(protocol, type, {}) =!= "Error"
+      }
+    }
   }
 }
 
@@ -376,11 +449,11 @@ describe "CurryJS.Data.Option" {
     }
 
     test "right identity" {
-      Some([1]).concat(Some([1]).empty()) =>= Some([1])
+      Some([1]).concat(Option.empty()) =>= Some([1])
     }
 
     test "left identity" {
-      Some([1]).empty().concat(Some([1])) =>= Some([1])
+      Option.empty().concat(Some([1])) =>= Some([1])
     }
   }
 

@@ -6,34 +6,31 @@ var Curry$2252 = {
                 v$2254.constructor = curried$2257;
                 v$2254.constructor.prototype = ctr$2256.prototype;
                 v$2254.prototype.constructor = curried$2257;
-                v$2254.prototype.of = function (x$2258) {
-                    return adt$2255.constructor.of(x$2258);
-                };
                 if (adt$2255.constructor === ctr$2256) {
                     adt$2255.constructor = v$2254.constructor;
-                    for (var k$2259 in ctr$2256) {
-                        if (ctr$2256.hasOwnProperty(k$2259)) {
-                            adt$2255.constructor[k$2259] = ctr$2256[k$2259];
+                    for (var k$2258 in ctr$2256) {
+                        if (ctr$2256.hasOwnProperty(k$2258)) {
+                            adt$2255.constructor[k$2258] = ctr$2256[k$2258];
                         }
                     }
                 }
             }
         })
     };
-function unrollApply$2253(fn$2260, a$2261) {
-    switch (a$2261.length) {
+function unrollApply$2253(fn$2259, a$2260) {
+    switch (a$2260.length) {
     case 0:
-        return fn$2260();
+        return fn$2259();
     case 1:
-        return fn$2260(a$2261[0]);
+        return fn$2259(a$2260[0]);
     case 2:
-        return fn$2260(a$2261[0], a$2261[1]);
+        return fn$2259(a$2260[0], a$2260[1]);
     case 3:
-        return fn$2260(a$2261[0], a$2261[1], a$2261[2]);
+        return fn$2259(a$2260[0], a$2260[1], a$2260[2]);
     case 4:
-        return fn$2260(a$2261[0], a$2261[1], a$2261[2], a$2261[3]);
+        return fn$2259(a$2260[0], a$2260[1], a$2260[2], a$2260[3]);
     default:
-        return fn$2260.apply(null, a$2261);
+        return fn$2259.apply(null, a$2260);
     }
 }
 module.exports = {

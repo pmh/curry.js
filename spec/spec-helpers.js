@@ -21,7 +21,7 @@ let test = macro {
     ;$(require("buster").assert.equals($a, $b, $desc)) ...
   }
 
-  rule { $desc { $a:expr =!= $b:ident } } => {
+  rule { $desc { $a:expr =!= $b:expr } } => {
     ;require("buster").assert.exception(function(){ $a }, $b)
   }
   
