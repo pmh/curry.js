@@ -622,6 +622,21 @@ describe "CurryJS.Data.Array" {
   }
 }
 
+describe "CurryJS.Data.Object" {
+  { merge } := C.Data.Object;
+
+  describe "merge :: Object -> Object -> Object" {
+    it "merges two objects" {
+      test "different keys" {
+        merge({a: 'b'}, {c: 'd'}) =>= { a: 'b', c: 'd' }
+      }
+      test "same keys" {
+        merge({a: 'b'}, {a: 'd'}) =>= { a: 'b' }
+      }
+    }
+  }
+}
+
 describe "CurryJS.Control.Functor" {
   { map } := C.Control.Functor;
 
