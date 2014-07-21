@@ -504,7 +504,7 @@ describe "CurryJS.Data.Option" {
   }
 }
 
-describe "CurryJS.Data.Option" {
+describe "CurryJS.Data.Either" {
   { id                  } := C.Function;
   { map                 } := C.Control.Functor;
   { Either, Left, Right } := C.Data.Either;
@@ -572,7 +572,8 @@ describe "CurryJS.Data.Option" {
 }
 
 describe "CurryJS.Data.Collection" {
-  {foldl, foldl1, foldr, foldr1, filter, flatten} := C.Data.Collection;
+  { Option, Some, None } := C.Data.Option;
+  {foldl, foldl1, foldr, foldr1, filter, head, tail, flatten} := C.Data.Collection;
 
   describe "foldl :: (a -> b -> a) -> a -> [b] -> a" {
     it "should fold a list from the left" {
@@ -608,6 +609,34 @@ describe "CurryJS.Data.Collection" {
     it "filters a list according to a predicate function" {
       test "filter" {
         filter(fun (x) -> x > 3, [1,2,3,4,5]) =>= [4, 5]
+      }
+    }
+  }
+
+  describe "head :: [a] -> Option a" {
+    it "returns the first element wrapped in a some for non-empty arrays" {
+      test "head non-empty" {
+        head([1,2,3,4,5]) =>= Some(1)
+      }
+    }
+
+    it "returns none for empty arrays" {
+      test "head empty" {
+        head([]) =>= None
+      }
+    }
+  }
+
+  describe "tail :: [a] -> [a]" {
+    it "returns a list with all but the first element for non-empty arrays" {
+      test "tail non-empty" {
+        tail([1,2,3,4,5]) =>= [2,3,4,5]
+      }
+    }
+
+    it "returns an empty list for empty arrays" {
+      test "tail empty" {
+        tail([]) =>= []
       }
     }
   }
