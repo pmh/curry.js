@@ -1458,7 +1458,7 @@ let let = macro {
 
 operator (..)  9 right { $l, $r } => #{ (function (x) { return $l($r(x)) })  }
 operator ($)   1 right { $l, $r } => #{ $l($r)                               }
-operator (<$>) 4 right { $l, $r } => #{ $r.map($l)                           }
+operator (<$>) 4 right { $l, $r } => #{ $r.map(fun (x) -> $l(x))             }
 operator (<*>) 4 left  { $l, $r } => #{ $l.ap($r)                            }
 operator (>>=) 1 left  { $l, $r } => #{ $l.chain($r.bind(this))              }
 

@@ -249,6 +249,34 @@ describe "CurryJS.Math" {
   }
 }
 
+describe "CurryJS.Function" {
+  { unary, binary, ternary } := C.Function;
+
+  describe "unary :: Function -> (a -> b)" {
+    it "it turns an n-arity function into a unary one" {
+      test "unary" {
+        unary(fun (x, y) -> [x, y])(1,2)(3) =>= [1,3]
+      }
+    }
+  }
+
+  describe "binary :: Function -> (a -> b)" {
+    it "it turns a n-arity function into a binary one" {
+      test "binary" {
+        binary(fun (x, y, z) -> [x, y, z])(1,2,3)(4) =>= [1,2,4]
+      }
+    }
+  }
+
+  describe "ternary :: Function -> (a -> b)" {
+    it "it turns a n-arity function into a ternary one" {
+      test "ternary" {
+        ternary(fun (x, y, z, w) -> [x, y, z, w])(1,2,3,4)(5) =>= [1,2,3,5]
+      }
+    }
+  }
+}
+
 describe "CurryJS.Number.Sum" {
   { Sum, getSum } := C.Number.Sum;
 
@@ -624,6 +652,7 @@ describe "CurryJS.Data.Array" {
 
 describe "CurryJS.Data.Object" {
   { merge, set } := C.Data.Object;
+  { map }        := C.Data.Collection;
 
   describe "merge :: Object -> Object -> Object" {
     it "merges two objects" {
@@ -640,6 +669,14 @@ describe "CurryJS.Data.Object" {
     it "returns a new object with the new key present" {
       test "set new key" {
         set({a: 'b'}, 'c', 'd') =>= { a: 'b', c: 'd' }
+      }
+    }
+  }
+
+  describe "map :: Functor f => (a -> b) -> f a -> f b" {
+    it "applies a function to every value of an object" {
+      test "inc" {
+        { a: 1, b: 2, c: 3 }.map(fun (x) -> x + 1) =>= { a: 2, b: 3, c: 4 }
       }
     }
   }
