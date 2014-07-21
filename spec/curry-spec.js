@@ -572,7 +572,7 @@ describe "CurryJS.Data.Option" {
 }
 
 describe "CurryJS.Data.Collection" {
-  {foldl, foldl1, foldr, foldr1, flatten} := C.Data.Collection;
+  {foldl, foldl1, foldr, foldr1, filter, flatten} := C.Data.Collection;
 
   describe "foldl :: (a -> b -> a) -> a -> [b] -> a" {
     it "should fold a list from the left" {
@@ -600,6 +600,14 @@ describe "CurryJS.Data.Collection" {
     it "should fold a list from the left using the last element as accumulator" {
       test "concat" { 
         foldr1(fun (acc, x) -> acc.concat([x]), [[6], [4], [2], []]) =>= [[2], [4], [6]] 
+      }
+    }
+  }
+
+  describe "filter :: (a -> Bool) -> [a] -> [a]" {
+    it "filters a list according to a predicate function" {
+      test "filter" {
+        filter(fun (x) -> x > 3, [1,2,3,4,5]) =>= [4, 5]
       }
     }
   }
