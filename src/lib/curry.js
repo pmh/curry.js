@@ -1,27 +1,27 @@
 (function () {
     'use strict';
-    var Base$2482 = require('./adt-derivers').Base;
-    var __slice$2484 = [].slice;
-    var __toString$2486 = {}.toString;
+    var Base$2511 = require('./adt-derivers').Base;
+    var __slice$2513 = [].slice;
+    var __toString$2515 = {}.toString;
     // ***************************************************************
     // **                       CurryJS.Core                        **
     // ***************************************************************
     // __ :: () -> ()
-    var __$2487 = function noop() {
+    var __$2516 = function noop() {
     };
-    var extendNative$2488 = function (native$2647, prop$2648, f$2649) {
-        return Object.defineProperty(native$2647, prop$2648, {
+    var extendNative$2517 = function (native$2679, prop$2680, f$2681) {
+        return Object.defineProperty(native$2679, prop$2680, {
             value: function () {
-                return f$2649.apply(this, [this].concat(__slice$2484.call(arguments)));
+                return f$2681.apply(this, [this].concat(__slice$2513.call(arguments)));
             }
         });
     };
-    var withMeta$2489 = function (f$2650, meta$2651) {
-        var keys$2652 = Object.keys(meta$2651);
-        keys$2652.forEach(function (name$2653) {
-            Object.defineProperty(f$2650, '__' + name$2653, { value: meta$2651[name$2653] });
+    var withMeta$2518 = function (f$2682, meta$2683) {
+        var keys$2684 = Object.keys(meta$2683);
+        keys$2684.forEach(function (name$2685) {
+            Object.defineProperty(f$2682, '__' + name$2685, { value: meta$2683[name$2685] });
         });
-        return f$2650;
+        return f$2682;
     };
     /*
   * curry :: (a ... -> b) -> (a1 -> (a2 -> (aN -> b)))
@@ -41,40 +41,40 @@
   *   mod2(2)     //=> 0
   *   mod2(3)     //=> 1
   */
-    var curry$2490 = function (f$2654, n$2655) {
-        var arity$2656 = typeof n$2655 !== 'undefined' ? n$2655 : typeof f$2654.__arity !== 'undefined' ? f$2654.__arity : f$2654.length, name$2657 = f$2654.name || f$2654.__name;
-        if (arity$2656 < 2)
-            return f$2654;
-        var curriedFn$2658 = withMeta$2489(function () {
-                var args$2659 = [].slice.call(arguments, 0, arity$2656), realArity$2660 = args$2659.filter(function (x$2662) {
-                        return x$2662 !== __$2487;
-                    }).length, self$2661 = this;
-                if (realArity$2660 >= arity$2656)
-                    return f$2654.apply(self$2661, arguments);
+    var curry$2519 = function (f$2686, n$2687) {
+        var arity$2688 = typeof n$2687 !== 'undefined' ? n$2687 : typeof f$2686.__arity !== 'undefined' ? f$2686.__arity : f$2686.length, name$2689 = f$2686.name || f$2686.__name;
+        if (arity$2688 < 2)
+            return f$2686;
+        var curriedFn$2690 = withMeta$2518(function () {
+                var args$2691 = [].slice.call(arguments, 0, arity$2688), realArity$2692 = args$2691.filter(function (x$2694) {
+                        return x$2694 !== __$2516;
+                    }).length, self$2693 = this;
+                if (realArity$2692 >= arity$2688)
+                    return f$2686.apply(self$2693, arguments);
                 else {
-                    var g$2663 = withMeta$2489(function () {
-                            var partialArgs$2664 = [].slice.call(arguments), newArgs$2665 = [];
-                            for (var i$2666 = 0; i$2666 < args$2659.length; i$2666++)
-                                newArgs$2665[i$2666] = args$2659[i$2666] === __$2487 ? partialArgs$2664.length === 0 ? undefined : partialArgs$2664.shift() : args$2659[i$2666];
-                            return curriedFn$2658.apply(self$2661, newArgs$2665.concat(partialArgs$2664));
+                    var g$2695 = withMeta$2518(function () {
+                            var partialArgs$2696 = [].slice.call(arguments), newArgs$2697 = [];
+                            for (var i$2698 = 0; i$2698 < args$2691.length; i$2698++)
+                                newArgs$2697[i$2698] = args$2691[i$2698] === __$2516 ? partialArgs$2696.length === 0 ? undefined : partialArgs$2696.shift() : args$2691[i$2698];
+                            return curriedFn$2690.apply(self$2693, newArgs$2697.concat(partialArgs$2696));
                         }, {
-                            name: name$2657,
-                            arity: arity$2656 - realArity$2660,
+                            name: name$2689,
+                            arity: arity$2688 - realArity$2692,
                             curried: true
                         });
-                    g$2663.toString = curriedFn$2658.toString.bind(curriedFn$2658);
-                    return g$2663;
+                    g$2695.toString = curriedFn$2690.toString.bind(curriedFn$2690);
+                    return g$2695;
                 }
             }, {
-                name: name$2657,
-                arity: arity$2656,
+                name: name$2689,
+                arity: arity$2688,
                 curried: true
             });
-        curriedFn$2658.toString = f$2654.toString.bind(f$2654);
-        return curriedFn$2658;
+        curriedFn$2690.toString = f$2686.toString.bind(f$2686);
+        return curriedFn$2690;
     };
-    extendNative$2488(Function.prototype, 'curry', function (self$2667, n$2668) {
-        return curry$2490(self$2667, n$2668);
+    extendNative$2517(Function.prototype, 'curry', function (self$2699, n$2700) {
+        return curry$2519(self$2699, n$2700);
     });
     /*
   * compose :: ((a -> b) -> (b -> c)) ... -> (a -> c)
@@ -95,55 +95,55 @@
   * odd  (1) => true
   *
   */
-    var compose$2491 = function () {
-        var fns$2669 = __slice$2484.call(arguments), self$2670 = this;
-        return fns$2669.reduce(function (f$2671, g$2672) {
+    var compose$2520 = function () {
+        var fns$2701 = __slice$2513.call(arguments), self$2702 = this;
+        return fns$2701.reduce(function (f$2703, g$2704) {
             return function () {
-                return f$2671.call(self$2670, g$2672.apply(self$2670, arguments));
+                return f$2703.call(self$2702, g$2704.apply(self$2702, arguments));
             };
         });
     };
     var // Protocol :: String -> Object -> { String, String, (ADT -> Object -> undefined) }
-    Protocol$2493 = function (name$2673, spec$2674) {
+    Protocol$2522 = function (name$2705, spec$2706) {
         return {
-            name: name$2673,
-            spec: spec$2674,
-            instance: function (type$2675, impl$2676) {
-                var name$2677 = this.name, spec$2678 = this.spec, constructor$2679 = spec$2678.constructor, proto$2680 = spec$2678.prototype, k$2681;
-                Object.keys(constructor$2679 || {}).map(function (field$2682) {
-                    if (constructor$2679[field$2682] === Protocol$2493.required && !impl$2676.hasOwnProperty(field$2682) && !type$2675.hasOwnProperty(field$2682))
-                        throw Protocol$2493.required(name$2677, field$2682);
-                    else if (!type$2675.hasOwnProperty(field$2682) && !impl$2676.hasOwnProperty(field$2682))
-                        type$2675[field$2682] = function () {
-                            return constructor$2679[field$2682].curry().apply(this, [this].concat(__slice$2484.call(arguments)));
+            name: name$2705,
+            spec: spec$2706,
+            instance: function (type$2707, impl$2708) {
+                var name$2709 = this.name, spec$2710 = this.spec, constructor$2711 = spec$2710.constructor, proto$2712 = spec$2710.prototype, k$2713;
+                Object.keys(constructor$2711 || {}).map(function (field$2714) {
+                    if (constructor$2711[field$2714] === Protocol$2522.required && !impl$2708.hasOwnProperty(field$2714) && !type$2707.hasOwnProperty(field$2714))
+                        throw Protocol$2522.required(name$2709, field$2714);
+                    else if (!type$2707.hasOwnProperty(field$2714) && !impl$2708.hasOwnProperty(field$2714))
+                        type$2707[field$2714] = function () {
+                            return constructor$2711[field$2714].curry().apply(this, [this].concat(__slice$2513.call(arguments)));
                         };
-                    else if (impl$2676.hasOwnProperty(field$2682))
-                        type$2675[field$2682] = function () {
-                            return impl$2676[field$2682].curry().apply(this, [this].concat(__slice$2484.call(arguments)));
+                    else if (impl$2708.hasOwnProperty(field$2714))
+                        type$2707[field$2714] = function () {
+                            return impl$2708[field$2714].curry().apply(this, [this].concat(__slice$2513.call(arguments)));
                         };
                 });
-                Object.keys(proto$2680 || {}).map(function (field$2683) {
-                    if (proto$2680[field$2683] === Protocol$2493.required && !impl$2676.hasOwnProperty(field$2683) && !type$2675.prototype.hasOwnProperty(field$2683))
-                        throw Protocol$2493.required(name$2677, field$2683);
-                    else if (!type$2675.prototype.hasOwnProperty(field$2683) && !impl$2676.hasOwnProperty(field$2683))
-                        type$2675.prototype[field$2683] = function () {
-                            return proto$2680[field$2683].curry().apply(this, [this].concat(__slice$2484.call(arguments)));
+                Object.keys(proto$2712 || {}).map(function (field$2715) {
+                    if (proto$2712[field$2715] === Protocol$2522.required && !impl$2708.hasOwnProperty(field$2715) && !type$2707.prototype.hasOwnProperty(field$2715))
+                        throw Protocol$2522.required(name$2709, field$2715);
+                    else if (!type$2707.prototype.hasOwnProperty(field$2715) && !impl$2708.hasOwnProperty(field$2715))
+                        type$2707.prototype[field$2715] = function () {
+                            return proto$2712[field$2715].curry().apply(this, [this].concat(__slice$2513.call(arguments)));
                         };
-                    else if (impl$2676.hasOwnProperty(field$2683))
-                        type$2675.prototype[field$2683] = function () {
-                            return impl$2676[field$2683].curry().apply(this, [this].concat(__slice$2484.call(arguments)));
+                    else if (impl$2708.hasOwnProperty(field$2715))
+                        type$2707.prototype[field$2715] = function () {
+                            return impl$2708[field$2715].curry().apply(this, [this].concat(__slice$2513.call(arguments)));
                         };
                 });
             }
         };
     };
-    Protocol$2493.required = function (name$2684, field$2685) {
-        return new Error(name$2684 + ' expected required field: \'' + field$2685 + '\' to be defined!');
+    Protocol$2522.required = function (name$2716, field$2717) {
+        return new Error(name$2716 + ' expected required field: \'' + field$2717 + '\' to be defined!');
     }.curry();
     // instance :: Protocol -> ADT -> Object -> undefined
-    function instance$2496(protocol$2686, type$2687, impl$2688) {
-        return function instance$2496(protocol$2689, type$2690, impl$2691) {
-            return protocol$2689.instance(type$2690, impl$2691);
+    function instance$2525(protocol$2718, type$2719, impl$2720) {
+        return function instance$2525(protocol$2721, type$2722, impl$2723) {
+            return protocol$2721.instance(type$2722, impl$2723);
         }.curry().apply(null, arguments);
     }
     ;
@@ -151,112 +151,112 @@
     // **                    CurryJS.Predicates                     **
     // ***************************************************************
     // not :: Truthy -> Bool
-    function not$2544(x$2692) {
-        return function not$2544(x$2693) {
-            return !x$2693;
+    function not$2573(x$2724) {
+        return function not$2573(x$2725) {
+            return !x$2725;
         }.curry().apply(null, arguments);
     }
     // and :: [Truthy] -> Bool
-    function and$2545(xs$2694) {
-        return function and$2545(xs$2695) {
-            return xs$2695.every(function (x$2696) {
-                return !!x$2696;
+    function and$2574(xs$2726) {
+        return function and$2574(xs$2727) {
+            return xs$2727.every(function (x$2728) {
+                return !!x$2728;
             }.curry());
         }.curry().apply(null, arguments);
     }
     // and :: [Truthy] -> Bool
-    function or$2546(xs$2697) {
-        return function or$2546(xs$2698) {
-            return xs$2698.some(function (x$2699) {
-                return !!x$2699;
+    function or$2575(xs$2729) {
+        return function or$2575(xs$2730) {
+            return xs$2730.some(function (x$2731) {
+                return !!x$2731;
             }.curry());
         }.curry().apply(null, arguments);
     }
     // isObject :: a -> Bool
-    function isObject$2547(x$2700) {
-        return function isObject$2547(x$2701) {
-            return function (a0$2702) {
-                if (Object.prototype.toString.call(a0$2702) === '[object Object]') {
+    function isObject$2576(x$2732) {
+        return function isObject$2576(x$2733) {
+            return function (a0$2734) {
+                if (Object.prototype.toString.call(a0$2734) === '[object Object]') {
                     return true;
                 }
                 return false;
-            }.call(this, x$2701);
+            }.call(this, x$2733);
         }.curry().apply(null, arguments);
     }
     // isArray :: a -> Bool
-    function isArray$2548(x$2703) {
-        return function isArray$2548(x$2704) {
-            return function (a0$2705) {
-                if (Array.isArray ? Array.isArray(a0$2705) : Object.prototype.toString.call(a0$2705) === '[object Array]') {
+    function isArray$2577(x$2735) {
+        return function isArray$2577(x$2736) {
+            return function (a0$2737) {
+                if (Array.isArray ? Array.isArray(a0$2737) : Object.prototype.toString.call(a0$2737) === '[object Array]') {
                     return true;
                 }
                 return false;
-            }.call(this, x$2704);
+            }.call(this, x$2736);
         }.curry().apply(null, arguments);
     }
     // isNumber :: a -> Bool
-    function isNumber$2549(x$2706) {
-        return function isNumber$2549(x$2707) {
-            return function (a0$2708) {
-                if (typeof a0$2708 === 'number' || Object.prototype.toString.call(a0$2708) === '[object Number]') {
+    function isNumber$2578(x$2738) {
+        return function isNumber$2578(x$2739) {
+            return function (a0$2740) {
+                if (typeof a0$2740 === 'number' || Object.prototype.toString.call(a0$2740) === '[object Number]') {
                     return true;
                 }
                 return false;
-            }.call(this, x$2707);
+            }.call(this, x$2739);
         }.curry().apply(null, arguments);
     }
     // isRegExp :: a -> Bool
-    function isRegExp$2550(x$2709) {
-        return function isRegExp$2550(x$2710) {
-            return function (a0$2711) {
-                if (Object.prototype.toString.call(a0$2711) === '[object RegExp]') {
+    function isRegExp$2579(x$2741) {
+        return function isRegExp$2579(x$2742) {
+            return function (a0$2743) {
+                if (Object.prototype.toString.call(a0$2743) === '[object RegExp]') {
                     return true;
                 }
                 return false;
-            }.call(this, x$2710);
+            }.call(this, x$2742);
         }.curry().apply(null, arguments);
     }
     // isString :: a -> Bool
-    function isString$2551(x$2712) {
-        return function isString$2551(x$2713) {
-            return function (a0$2714) {
-                if (typeof a0$2714 === 'string' || Object.prototype.toString.call(a0$2714) === '[object String]') {
+    function isString$2580(x$2744) {
+        return function isString$2580(x$2745) {
+            return function (a0$2746) {
+                if (typeof a0$2746 === 'string' || Object.prototype.toString.call(a0$2746) === '[object String]') {
                     return true;
                 }
                 return false;
-            }.call(this, x$2713);
+            }.call(this, x$2745);
         }.curry().apply(null, arguments);
     }
     // isNull :: a -> Bool
-    function isNull$2552(x$2715) {
-        return function isNull$2552(x$2716) {
-            return function (a0$2717) {
-                if (a0$2717 === null) {
+    function isNull$2581(x$2747) {
+        return function isNull$2581(x$2748) {
+            return function (a0$2749) {
+                if (a0$2749 === null) {
                     return true;
                 }
                 return false;
-            }.call(this, x$2716);
+            }.call(this, x$2748);
         }.curry().apply(null, arguments);
     }
     // isUndef :: a -> Bool
-    function isUndef$2553(x$2718) {
-        return function isUndef$2553(x$2719) {
-            return function (a0$2720) {
-                if (a0$2720 === void 0) {
+    function isUndef$2582(x$2750) {
+        return function isUndef$2582(x$2751) {
+            return function (a0$2752) {
+                if (a0$2752 === void 0) {
                     return true;
                 }
                 return false;
-            }.call(this, x$2719);
+            }.call(this, x$2751);
         }.curry().apply(null, arguments);
     }
     // exists :: a -> Bool
-    function exists$2554(x$2721) {
-        return function exists$2554(x$2722) {
-            return function (x$2723) {
-                return not$2544(or$2546(x$2723));
+    function exists$2583(x$2753) {
+        return function exists$2583(x$2754) {
+            return function (x$2755) {
+                return not$2573(or$2575(x$2755));
             }([
-                isNull$2552(x$2722),
-                isUndef$2553(x$2722)
+                isNull$2581(x$2754),
+                isUndef$2582(x$2754)
             ]);
         }.curry().apply(null, arguments);
     }
@@ -264,38 +264,38 @@
     // **                        CurryJS.Math                       **
     // ***************************************************************  
     // plus :: Number a => a -> a -> a
-    function plus$2555(a$2724, b$2725) {
-        return function plus$2555(a$2726, b$2727) {
-            return a$2726 + b$2727;
+    function plus$2584(a$2756, b$2757) {
+        return function plus$2584(a$2758, b$2759) {
+            return a$2758 + b$2759;
         }.curry().apply(null, arguments);
     }
     // minus :: Number a => a -> a -> a
-    function minus$2556(a$2728, b$2729) {
-        return function minus$2556(a$2730, b$2731) {
-            return a$2730 - b$2731;
+    function minus$2585(a$2760, b$2761) {
+        return function minus$2585(a$2762, b$2763) {
+            return a$2762 - b$2763;
         }.curry().apply(null, arguments);
     }
     // times :: Number a => a -> a -> a
-    function times$2557(a$2732, b$2733) {
-        return function times$2557(a$2734, b$2735) {
-            return a$2734 * b$2735;
+    function times$2586(a$2764, b$2765) {
+        return function times$2586(a$2766, b$2767) {
+            return a$2766 * b$2767;
         }.curry().apply(null, arguments);
     }
     // div :: Number a => a -> a -> a
-    function div$2558(a$2736, b$2737) {
-        return function div$2558(a$2738, b$2739) {
-            return a$2738 / b$2739;
+    function div$2587(a$2768, b$2769) {
+        return function div$2587(a$2770, b$2771) {
+            return a$2770 / b$2771;
         }.curry().apply(null, arguments);
     }
     var
         // ***************************************************************
         // **                  CurryJS.Control.Functor                  **
         // ***************************************************************
-        Functor$2560 = Protocol$2493('Functor', { prototype: { map: Protocol$2493.required } });
+        Functor$2589 = Protocol$2522('Functor', { prototype: { map: Protocol$2522.required } });
     // map :: Functor f => (a -> b) -> f a -> f b
-    function map$2562(f$2740, xs$2741) {
-        return function map$2562(f$2742, xs$2743) {
-            return xs$2743.map(f$2742);
+    function map$2591(f$2772, xs$2773) {
+        return function map$2591(f$2774, xs$2775) {
+            return xs$2775.map(f$2774);
         }.curry().apply(null, arguments);
     }
     ;
@@ -303,11 +303,11 @@
         // ***************************************************************
         // **                CurryJS.Control.Applicative                **
         // ***************************************************************
-        Applicative$2564 = Protocol$2493('Applicative', { prototype: { ap: Protocol$2493.required } });
+        Applicative$2593 = Protocol$2522('Applicative', { prototype: { ap: Protocol$2522.required } });
     // ap :: Applicative f => f (a -> b) -> f a -> f b
-    function ap$2566(f$2744, xs$2745) {
-        return function ap$2566(f$2746, xs$2747) {
-            return f$2746.ap(xs$2747);
+    function ap$2595(f$2776, xs$2777) {
+        return function ap$2595(f$2778, xs$2779) {
+            return f$2778.ap(xs$2779);
         }.curry().apply(null, arguments);
     }
     ;
@@ -315,626 +315,638 @@
         // ***************************************************************
         // **                   CurryJS.Control.Monad                   **
         // ***************************************************************
-        Monad$2568 = Protocol$2493('Monad', {
+        Monad$2597 = Protocol$2522('Monad', {
             constructor: {
-                of: function (x$2749) {
-                    return this.prototype.of(x$2749);
+                of: function (x$2781) {
+                    return this.prototype.of(x$2781);
                 }.curry()
             },
             prototype: {
-                of: Protocol$2493.required,
-                chain: Protocol$2493.required,
-                map: function (self$2755, f$2756) {
-                    return self$2755.chain(function (x$2757) {
-                        return self$2755.of(f$2756(x$2757));
+                of: Protocol$2522.required,
+                chain: Protocol$2522.required,
+                map: function (self$2787, f$2788) {
+                    return self$2787.chain(function (x$2789) {
+                        return self$2787.of(f$2788(x$2789));
                     }.bind(this));
                 }.curry(),
-                ap: function (self$2758, x$2759) {
-                    return self$2758.chain(map$2562(__$2487, x$2759).bind(this));
+                ap: function (self$2790, x$2791) {
+                    return self$2790.chain(map$2591(__$2516, x$2791).bind(this));
                 }.curry()
             }
         });
     // chain :: Monad m => m a -> (a -> m b) -> m b
-    function chain$2570(xs$2760, f$2761) {
-        return function chain$2570(xs$2762, f$2763) {
-            return xs$2762.chain(f$2763);
+    function chain$2599(xs$2792, f$2793) {
+        return function chain$2599(xs$2794, f$2795) {
+            return xs$2794.chain(f$2795);
         }.curry().apply(null, arguments);
     }
     ;
     // pure :: Monad m => m -> b -> m b
-    function pure$2572(f$2764, x$2765) {
-        return function pure$2572(f$2766, x$2767) {
-            return f$2766.of ? f$2766.of(x$2767) : f$2766.constructor.of(x$2767);
+    function pure$2601(f$2796, x$2797) {
+        return function pure$2601(f$2798, x$2799) {
+            return f$2798.of ? f$2798.of(x$2799) : f$2798.constructor.of(x$2799);
         }.curry().apply(null, arguments);
     }
     var
         // ***************************************************************
         // **                  CurryJS.Control.Monoid                   **
         // ***************************************************************
-        Monoid$2574 = Protocol$2493('Monoid', {
+        Monoid$2603 = Protocol$2522('Monoid', {
             constructor: {
                 empty: function () {
                     return this.prototype.empty();
                 }.curry()
             },
             prototype: {
-                empty: Protocol$2493.required,
-                concat: Protocol$2493.required
+                empty: Protocol$2522.required,
+                concat: Protocol$2522.required
             }
         });
     // concat :: (Monoid a) => a -> a -> a
-    function concat$2576(a$2770, b$2771) {
-        return function concat$2576(a$2772, b$2773) {
-            return a$2772.concat(b$2773);
+    function concat$2605(a$2802, b$2803) {
+        return function concat$2605(a$2804, b$2805) {
+            return a$2804.concat(b$2805);
         }.curry().apply(null, arguments);
     }
     ;
     // ***************************************************************
     // **                    CurryJS.Number.Sum                     **
     // *************************************************************** 
-    var Sum$2580 = function () {
-            function Sum$2774(_0$2776) {
-                if (!(this instanceof Sum$2774)) {
-                    return new Sum$2774(_0$2776);
+    var Sum$2609 = function () {
+            function Sum$2806(_0$2808) {
+                if (!(this instanceof Sum$2806)) {
+                    return new Sum$2806(_0$2808);
                 }
-                if (typeof _0$2776 === 'number' || Object.prototype.toString.call(_0$2776) === '[object Number]') {
-                    this['0'] = _0$2776;
+                if (typeof _0$2808 === 'number' || Object.prototype.toString.call(_0$2808) === '[object Number]') {
+                    this['0'] = _0$2808;
                 } else {
                     throw new TypeError('Unexpected type for field: Sum.0');
                 }
             }
-            Sum$2774.prototype.length = 1;
-            var derived$2775 = Base$2482.derive({
+            Sum$2806.prototype.length = 1;
+            var derived$2807 = Base$2511.derive({
                     name: 'Sum',
-                    constructor: Sum$2774,
-                    prototype: Sum$2774.prototype,
+                    constructor: Sum$2806,
+                    prototype: Sum$2806.prototype,
                     variants: [{
                             name: 'Sum',
-                            constructor: Sum$2774,
-                            prototype: Sum$2774.prototype,
+                            constructor: Sum$2806,
+                            prototype: Sum$2806.prototype,
                             fields: ['0']
                         }]
                 });
-            return derived$2775.constructor;
+            return derived$2807.constructor;
         }();
-    instance$2496(Monoid$2574, Sum$2580, {
+    instance$2525(Monoid$2603, Sum$2609, {
         empty: function () {
-            return Sum$2580(0);
+            return Sum$2609(0);
         }.curry(),
-        concat: function (a$2784, b$2785) {
-            return function (a0$2786, a1$2787) {
-                var r0$2788 = Sum$2580.unapply(a0$2786);
-                if (r0$2788 != null && r0$2788.length === 1) {
-                    var r1$2789 = Sum$2580.unapply(a1$2787);
-                    if (r1$2789 != null && r1$2789.length === 1) {
-                        var x$2790 = r0$2788[0];
-                        var y$2791 = r1$2789[0];
-                        return Sum$2580(x$2790 + y$2791);
+        concat: function (a$2816, b$2817) {
+            return function (a0$2818, a1$2819) {
+                var r0$2820 = Sum$2609.unapply(a0$2818);
+                if (r0$2820 != null && r0$2820.length === 1) {
+                    var r1$2821 = Sum$2609.unapply(a1$2819);
+                    if (r1$2821 != null && r1$2821.length === 1) {
+                        var x$2822 = r0$2820[0];
+                        var y$2823 = r1$2821[0];
+                        return Sum$2609(x$2822 + y$2823);
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2784, b$2785);
+            }.call(this, a$2816, b$2817);
         }.curry()
     });
-    function getSum$2589(x$2792) {
-        return function getSum$2589(x$2793) {
-            return function (a0$2794) {
-                var r0$2795 = Sum$2580.unapply(a0$2794);
-                if (r0$2795 != null && r0$2795.length === 1) {
-                    var x$2796 = r0$2795[0];
-                    return x$2796;
+    function getSum$2618(x$2824) {
+        return function getSum$2618(x$2825) {
+            return function (a0$2826) {
+                var r0$2827 = Sum$2609.unapply(a0$2826);
+                if (r0$2827 != null && r0$2827.length === 1) {
+                    var x$2828 = r0$2827[0];
+                    return x$2828;
                 }
                 throw new TypeError('No match');
-            }.call(this, x$2793);
+            }.call(this, x$2825);
         }.curry().apply(null, arguments);
     }
     // ***************************************************************
     // **                  CurryJS.Number.Product                   **
     // *************************************************************** 
-    var Product$2590 = function () {
-            function Product$2797(_0$2799) {
-                if (!(this instanceof Product$2797)) {
-                    return new Product$2797(_0$2799);
+    var Product$2619 = function () {
+            function Product$2829(_0$2831) {
+                if (!(this instanceof Product$2829)) {
+                    return new Product$2829(_0$2831);
                 }
-                if (typeof _0$2799 === 'number' || Object.prototype.toString.call(_0$2799) === '[object Number]') {
-                    this['0'] = _0$2799;
+                if (typeof _0$2831 === 'number' || Object.prototype.toString.call(_0$2831) === '[object Number]') {
+                    this['0'] = _0$2831;
                 } else {
                     throw new TypeError('Unexpected type for field: Product.0');
                 }
             }
-            Product$2797.prototype.length = 1;
-            var derived$2798 = Base$2482.derive({
+            Product$2829.prototype.length = 1;
+            var derived$2830 = Base$2511.derive({
                     name: 'Product',
-                    constructor: Product$2797,
-                    prototype: Product$2797.prototype,
+                    constructor: Product$2829,
+                    prototype: Product$2829.prototype,
                     variants: [{
                             name: 'Product',
-                            constructor: Product$2797,
-                            prototype: Product$2797.prototype,
+                            constructor: Product$2829,
+                            prototype: Product$2829.prototype,
                             fields: ['0']
                         }]
                 });
-            return derived$2798.constructor;
+            return derived$2830.constructor;
         }();
-    instance$2496(Monoid$2574, Product$2590, {
-        empty: function (self$2806) {
-            return Product$2590(1);
+    instance$2525(Monoid$2603, Product$2619, {
+        empty: function (self$2838) {
+            return Product$2619(1);
         }.curry(),
-        concat: function (a$2807, b$2808) {
-            return function (a0$2809, a1$2810) {
-                var r0$2811 = Product$2590.unapply(a0$2809);
-                if (r0$2811 != null && r0$2811.length === 1) {
-                    var r1$2812 = Product$2590.unapply(a1$2810);
-                    if (r1$2812 != null && r1$2812.length === 1) {
-                        var x$2813 = r0$2811[0];
-                        var y$2814 = r1$2812[0];
-                        return Product$2590(x$2813 * y$2814);
+        concat: function (a$2839, b$2840) {
+            return function (a0$2841, a1$2842) {
+                var r0$2843 = Product$2619.unapply(a0$2841);
+                if (r0$2843 != null && r0$2843.length === 1) {
+                    var r1$2844 = Product$2619.unapply(a1$2842);
+                    if (r1$2844 != null && r1$2844.length === 1) {
+                        var x$2845 = r0$2843[0];
+                        var y$2846 = r1$2844[0];
+                        return Product$2619(x$2845 * y$2846);
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2807, b$2808);
+            }.call(this, a$2839, b$2840);
         }.curry()
     });
-    function getProduct$2599(x$2815) {
-        return function getProduct$2599(x$2816) {
-            return function (a0$2817) {
-                var r0$2818 = Product$2590.unapply(a0$2817);
-                if (r0$2818 != null && r0$2818.length === 1) {
-                    var x$2819 = r0$2818[0];
-                    return x$2819;
+    function getProduct$2628(x$2847) {
+        return function getProduct$2628(x$2848) {
+            return function (a0$2849) {
+                var r0$2850 = Product$2619.unapply(a0$2849);
+                if (r0$2850 != null && r0$2850.length === 1) {
+                    var x$2851 = r0$2850[0];
+                    return x$2851;
                 }
                 throw new TypeError('No match');
-            }.call(this, x$2816);
+            }.call(this, x$2848);
         }.curry().apply(null, arguments);
     }
     // ***************************************************************
     // **                    CurryJS.Number.Max                     **
     // *************************************************************** 
-    var Max$2600 = function () {
-            function Max$2820(_0$2822) {
-                if (!(this instanceof Max$2820)) {
-                    return new Max$2820(_0$2822);
+    var Max$2629 = function () {
+            function Max$2852(_0$2854) {
+                if (!(this instanceof Max$2852)) {
+                    return new Max$2852(_0$2854);
                 }
-                if (typeof _0$2822 === 'number' || Object.prototype.toString.call(_0$2822) === '[object Number]') {
-                    this['0'] = _0$2822;
+                if (typeof _0$2854 === 'number' || Object.prototype.toString.call(_0$2854) === '[object Number]') {
+                    this['0'] = _0$2854;
                 } else {
                     throw new TypeError('Unexpected type for field: Max.0');
                 }
             }
-            Max$2820.prototype.length = 1;
-            var derived$2821 = Base$2482.derive({
+            Max$2852.prototype.length = 1;
+            var derived$2853 = Base$2511.derive({
                     name: 'Max',
-                    constructor: Max$2820,
-                    prototype: Max$2820.prototype,
+                    constructor: Max$2852,
+                    prototype: Max$2852.prototype,
                     variants: [{
                             name: 'Max',
-                            constructor: Max$2820,
-                            prototype: Max$2820.prototype,
+                            constructor: Max$2852,
+                            prototype: Max$2852.prototype,
                             fields: ['0']
                         }]
                 });
-            return derived$2821.constructor;
+            return derived$2853.constructor;
         }();
-    instance$2496(Monoid$2574, Max$2600, {
-        empty: function (self$2829) {
-            return Max$2600(-Infinity);
+    instance$2525(Monoid$2603, Max$2629, {
+        empty: function (self$2861) {
+            return Max$2629(-Infinity);
         }.curry(),
-        concat: function (a$2830, b$2831) {
-            return function (a0$2832, a1$2833) {
-                var r0$2834 = Max$2600.unapply(a0$2832);
-                if (r0$2834 != null && r0$2834.length === 1) {
-                    var r1$2835 = Max$2600.unapply(a1$2833);
-                    if (r1$2835 != null && r1$2835.length === 1) {
-                        var x$2836 = r0$2834[0];
-                        var y$2837 = r1$2835[0];
-                        return Max$2600(x$2836 > y$2837 ? x$2836 : y$2837);
+        concat: function (a$2862, b$2863) {
+            return function (a0$2864, a1$2865) {
+                var r0$2866 = Max$2629.unapply(a0$2864);
+                if (r0$2866 != null && r0$2866.length === 1) {
+                    var r1$2867 = Max$2629.unapply(a1$2865);
+                    if (r1$2867 != null && r1$2867.length === 1) {
+                        var x$2868 = r0$2866[0];
+                        var y$2869 = r1$2867[0];
+                        return Max$2629(x$2868 > y$2869 ? x$2868 : y$2869);
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2830, b$2831);
+            }.call(this, a$2862, b$2863);
         }.curry()
     });
-    function getMax$2609(x$2838) {
-        return function getMax$2609(x$2839) {
-            return function (a0$2840) {
-                var r0$2841 = Max$2600.unapply(a0$2840);
-                if (r0$2841 != null && r0$2841.length === 1) {
-                    var x$2842 = r0$2841[0];
-                    return x$2842;
+    function getMax$2638(x$2870) {
+        return function getMax$2638(x$2871) {
+            return function (a0$2872) {
+                var r0$2873 = Max$2629.unapply(a0$2872);
+                if (r0$2873 != null && r0$2873.length === 1) {
+                    var x$2874 = r0$2873[0];
+                    return x$2874;
                 }
                 throw new TypeError('No match');
-            }.call(this, x$2839);
+            }.call(this, x$2871);
         }.curry().apply(null, arguments);
     }
     // ***************************************************************
     // **                    CurryJS.Number.Min                     **
     // *************************************************************** 
-    var Min$2610 = function () {
-            function Min$2843(_0$2845) {
-                if (!(this instanceof Min$2843)) {
-                    return new Min$2843(_0$2845);
+    var Min$2639 = function () {
+            function Min$2875(_0$2877) {
+                if (!(this instanceof Min$2875)) {
+                    return new Min$2875(_0$2877);
                 }
-                if (typeof _0$2845 === 'number' || Object.prototype.toString.call(_0$2845) === '[object Number]') {
-                    this['0'] = _0$2845;
+                if (typeof _0$2877 === 'number' || Object.prototype.toString.call(_0$2877) === '[object Number]') {
+                    this['0'] = _0$2877;
                 } else {
                     throw new TypeError('Unexpected type for field: Min.0');
                 }
             }
-            Min$2843.prototype.length = 1;
-            var derived$2844 = Base$2482.derive({
+            Min$2875.prototype.length = 1;
+            var derived$2876 = Base$2511.derive({
                     name: 'Min',
-                    constructor: Min$2843,
-                    prototype: Min$2843.prototype,
+                    constructor: Min$2875,
+                    prototype: Min$2875.prototype,
                     variants: [{
                             name: 'Min',
-                            constructor: Min$2843,
-                            prototype: Min$2843.prototype,
+                            constructor: Min$2875,
+                            prototype: Min$2875.prototype,
                             fields: ['0']
                         }]
                 });
-            return derived$2844.constructor;
+            return derived$2876.constructor;
         }();
-    instance$2496(Monoid$2574, Min$2610, {
-        empty: function (self$2852) {
-            return Min$2610(Infinity);
+    instance$2525(Monoid$2603, Min$2639, {
+        empty: function (self$2884) {
+            return Min$2639(Infinity);
         }.curry(),
-        concat: function (a$2853, b$2854) {
-            return function (a0$2855, a1$2856) {
-                var r0$2857 = Min$2610.unapply(a0$2855);
-                if (r0$2857 != null && r0$2857.length === 1) {
-                    var r1$2858 = Min$2610.unapply(a1$2856);
-                    if (r1$2858 != null && r1$2858.length === 1) {
-                        var x$2859 = r0$2857[0];
-                        var y$2860 = r1$2858[0];
-                        return Min$2610(x$2859 < y$2860 ? x$2859 : y$2860);
+        concat: function (a$2885, b$2886) {
+            return function (a0$2887, a1$2888) {
+                var r0$2889 = Min$2639.unapply(a0$2887);
+                if (r0$2889 != null && r0$2889.length === 1) {
+                    var r1$2890 = Min$2639.unapply(a1$2888);
+                    if (r1$2890 != null && r1$2890.length === 1) {
+                        var x$2891 = r0$2889[0];
+                        var y$2892 = r1$2890[0];
+                        return Min$2639(x$2891 < y$2892 ? x$2891 : y$2892);
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2853, b$2854);
+            }.call(this, a$2885, b$2886);
         }.curry()
     });
-    function getMin$2619(x$2861) {
-        return function getMin$2619(x$2862) {
-            return function (a0$2863) {
-                var r0$2864 = Min$2610.unapply(a0$2863);
-                if (r0$2864 != null && r0$2864.length === 1) {
-                    var x$2865 = r0$2864[0];
-                    return x$2865;
+    function getMin$2648(x$2893) {
+        return function getMin$2648(x$2894) {
+            return function (a0$2895) {
+                var r0$2896 = Min$2639.unapply(a0$2895);
+                if (r0$2896 != null && r0$2896.length === 1) {
+                    var x$2897 = r0$2896[0];
+                    return x$2897;
                 }
                 throw new TypeError('No match');
-            }.call(this, x$2862);
+            }.call(this, x$2894);
         }.curry().apply(null, arguments);
     }
     // ***************************************************************
     // **                    CurryJS.Data.Option                    **
     // ***************************************************************
-    var Option$2620 = function () {
-            function Option$2866() {
+    var Option$2649 = function () {
+            function Option$2898() {
             }
-            function Some$2867(val$2870) {
-                if (!(this instanceof Some$2867)) {
-                    return new Some$2867(val$2870);
+            function Some$2899(val$2902) {
+                if (!(this instanceof Some$2899)) {
+                    return new Some$2899(val$2902);
                 }
-                this.val = val$2870;
+                this.val = val$2902;
             }
-            Some$2867.prototype = new Option$2866();
-            Some$2867.prototype.constructor = Some$2867;
-            function None$2868() {
+            Some$2899.prototype = new Option$2898();
+            Some$2899.prototype.constructor = Some$2899;
+            function None$2900() {
             }
-            None$2868.prototype = new Option$2866();
-            None$2868.prototype.constructor = None$2868;
-            var derived$2869 = Base$2482.derive({
+            None$2900.prototype = new Option$2898();
+            None$2900.prototype.constructor = None$2900;
+            var derived$2901 = Base$2511.derive({
                     name: 'Option',
-                    constructor: Option$2866,
-                    prototype: Option$2866.prototype,
+                    constructor: Option$2898,
+                    prototype: Option$2898.prototype,
                     variants: [
                         {
                             name: 'Some',
-                            constructor: Some$2867,
-                            prototype: Some$2867.prototype,
+                            constructor: Some$2899,
+                            prototype: Some$2899.prototype,
                             fields: ['val']
                         },
                         {
                             name: 'None',
-                            constructor: None$2868,
-                            prototype: None$2868.prototype
+                            constructor: None$2900,
+                            prototype: None$2900.prototype
                         }
                     ]
                 });
-            Option$2866.Some = derived$2869.variants[0].constructor;
-            Option$2866.None = new derived$2869.variants[1].constructor();
-            return Option$2866;
+            Option$2898.Some = derived$2901.variants[0].constructor;
+            Option$2898.None = new derived$2901.variants[1].constructor();
+            return Option$2898;
         }();
-    var Some$2621 = Option$2620.Some;
-    var None$2622 = Option$2620.None;
-    instance$2496(Monad$2568, Option$2620, {
-        of: function (self$2877, x$2878) {
-            return Some$2621(x$2878);
+    var Some$2650 = Option$2649.Some;
+    var None$2651 = Option$2649.None;
+    instance$2525(Monad$2597, Option$2649, {
+        of: function (self$2909, x$2910) {
+            return Some$2650(x$2910);
         }.curry(),
-        chain: function (self$2879, f$2880) {
-            return function (a0$2881, a1$2882) {
-                var r0$2883 = Some$2621.unapply(a0$2881);
-                if (r0$2883 != null && (r0$2883.length === 1 && (typeof a1$2882 === 'function' || Object.prototype.toString.call(a1$2882) === '[object Function]'))) {
-                    var x$2884 = r0$2883[0];
-                    return f$2880(x$2884);
+        chain: function (self$2911, f$2912) {
+            return function (a0$2913, a1$2914) {
+                var r0$2915 = Some$2650.unapply(a0$2913);
+                if (r0$2915 != null && (r0$2915.length === 1 && (typeof a1$2914 === 'function' || Object.prototype.toString.call(a1$2914) === '[object Function]'))) {
+                    var x$2916 = r0$2915[0];
+                    return f$2912(x$2916);
                 }
-                if ((None$2622.hasInstance ? None$2622.hasInstance(a0$2881) : a0$2881 instanceof None$2622) && (typeof a1$2882 === 'function' || Object.prototype.toString.call(a1$2882) === '[object Function]')) {
-                    return None$2622;
+                if ((None$2651.hasInstance ? None$2651.hasInstance(a0$2913) : a0$2913 instanceof None$2651) && (typeof a1$2914 === 'function' || Object.prototype.toString.call(a1$2914) === '[object Function]')) {
+                    return None$2651;
                 }
                 throw new TypeError('No match');
-            }.call(this, self$2879, f$2880);
+            }.call(this, self$2911, f$2912);
         }.curry()
     });
-    instance$2496(Monoid$2574, Option$2620, {
-        empty: function (self$2891) {
-            return None$2622;
+    instance$2525(Monoid$2603, Option$2649, {
+        empty: function (self$2923) {
+            return None$2651;
         }.curry(),
-        concat: function (a$2892, b$2893) {
-            return function (a0$2894, a1$2895) {
-                if ((Option$2620.hasInstance ? Option$2620.hasInstance(a0$2894) : a0$2894 instanceof Option$2620) && (None$2622.hasInstance ? None$2622.hasInstance(a1$2895) : a1$2895 instanceof None$2622)) {
-                    return a$2892;
+        concat: function (a$2924, b$2925) {
+            return function (a0$2926, a1$2927) {
+                if ((Option$2649.hasInstance ? Option$2649.hasInstance(a0$2926) : a0$2926 instanceof Option$2649) && (None$2651.hasInstance ? None$2651.hasInstance(a1$2927) : a1$2927 instanceof None$2651)) {
+                    return a$2924;
                 }
-                if ((None$2622.hasInstance ? None$2622.hasInstance(a0$2894) : a0$2894 instanceof None$2622) && (Option$2620.hasInstance ? Option$2620.hasInstance(a1$2895) : a1$2895 instanceof Option$2620)) {
-                    return b$2893;
+                if ((None$2651.hasInstance ? None$2651.hasInstance(a0$2926) : a0$2926 instanceof None$2651) && (Option$2649.hasInstance ? Option$2649.hasInstance(a1$2927) : a1$2927 instanceof Option$2649)) {
+                    return b$2925;
                 }
-                var r0$2896 = Some$2621.unapply(a0$2894);
-                if (r0$2896 != null && r0$2896.length === 1) {
-                    var r1$2897 = Some$2621.unapply(a1$2895);
-                    if (r1$2897 != null && r1$2897.length === 1) {
-                        var v1$2898 = r0$2896[0];
-                        var v2$2899 = r1$2897[0];
-                        return Some$2621(v1$2898.concat(v2$2899));
+                var r0$2928 = Some$2650.unapply(a0$2926);
+                if (r0$2928 != null && r0$2928.length === 1) {
+                    var r1$2929 = Some$2650.unapply(a1$2927);
+                    if (r1$2929 != null && r1$2929.length === 1) {
+                        var v1$2930 = r0$2928[0];
+                        var v2$2931 = r1$2929[0];
+                        return Some$2650(v1$2930.concat(v2$2931));
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2892, b$2893);
+            }.call(this, a$2924, b$2925);
         }.curry()
     });
     // ***************************************************************
     // **                    CurryJS.Data.Either                    **
     // ***************************************************************
-    var Either$2626 = function () {
-            function Either$2900() {
+    var Either$2655 = function () {
+            function Either$2932() {
             }
-            function Left$2901(l$2904) {
-                if (!(this instanceof Left$2901)) {
-                    return new Left$2901(l$2904);
+            function Left$2933(l$2936) {
+                if (!(this instanceof Left$2933)) {
+                    return new Left$2933(l$2936);
                 }
-                this.l = l$2904;
+                this.l = l$2936;
             }
-            Left$2901.prototype = new Either$2900();
-            Left$2901.prototype.constructor = Left$2901;
-            function Right$2902(r$2905) {
-                if (!(this instanceof Right$2902)) {
-                    return new Right$2902(r$2905);
+            Left$2933.prototype = new Either$2932();
+            Left$2933.prototype.constructor = Left$2933;
+            function Right$2934(r$2937) {
+                if (!(this instanceof Right$2934)) {
+                    return new Right$2934(r$2937);
                 }
-                this.r = r$2905;
+                this.r = r$2937;
             }
-            Right$2902.prototype = new Either$2900();
-            Right$2902.prototype.constructor = Right$2902;
-            var derived$2903 = Base$2482.derive({
+            Right$2934.prototype = new Either$2932();
+            Right$2934.prototype.constructor = Right$2934;
+            var derived$2935 = Base$2511.derive({
                     name: 'Either',
-                    constructor: Either$2900,
-                    prototype: Either$2900.prototype,
+                    constructor: Either$2932,
+                    prototype: Either$2932.prototype,
                     variants: [
                         {
                             name: 'Left',
-                            constructor: Left$2901,
-                            prototype: Left$2901.prototype,
+                            constructor: Left$2933,
+                            prototype: Left$2933.prototype,
                             fields: ['l']
                         },
                         {
                             name: 'Right',
-                            constructor: Right$2902,
-                            prototype: Right$2902.prototype,
+                            constructor: Right$2934,
+                            prototype: Right$2934.prototype,
                             fields: ['r']
                         }
                     ]
                 });
-            Either$2900.Left = derived$2903.variants[0].constructor;
-            Either$2900.Right = derived$2903.variants[1].constructor;
-            return Either$2900;
+            Either$2932.Left = derived$2935.variants[0].constructor;
+            Either$2932.Right = derived$2935.variants[1].constructor;
+            return Either$2932;
         }();
-    var Left$2627 = Either$2626.Left;
-    var Right$2628 = Either$2626.Right;
-    instance$2496(Monad$2568, Either$2626, {
-        of: function (self$2912, x$2913) {
-            return Right$2628(x$2913);
+    var Left$2656 = Either$2655.Left;
+    var Right$2657 = Either$2655.Right;
+    instance$2525(Monad$2597, Either$2655, {
+        of: function (self$2944, x$2945) {
+            return Right$2657(x$2945);
         }.curry(),
-        chain: function (self$2914, f$2915) {
-            return function (a0$2916, a1$2917) {
-                var r0$2918 = Right$2628.unapply(a0$2916);
-                if (r0$2918 != null && (r0$2918.length === 1 && (typeof a1$2917 === 'function' || Object.prototype.toString.call(a1$2917) === '[object Function]'))) {
-                    var x$2920 = r0$2918[0];
-                    return f$2915(x$2920);
+        chain: function (self$2946, f$2947) {
+            return function (a0$2948, a1$2949) {
+                var r0$2950 = Right$2657.unapply(a0$2948);
+                if (r0$2950 != null && (r0$2950.length === 1 && (typeof a1$2949 === 'function' || Object.prototype.toString.call(a1$2949) === '[object Function]'))) {
+                    var x$2952 = r0$2950[0];
+                    return f$2947(x$2952);
                 }
-                var r1$2919 = Left$2627.unapply(a0$2916);
-                if (r1$2919 != null && r1$2919.length === 1) {
-                    var x$2920 = r1$2919[0];
-                    return self$2914;
+                var r1$2951 = Left$2656.unapply(a0$2948);
+                if (r1$2951 != null && r1$2951.length === 1) {
+                    var x$2952 = r1$2951[0];
+                    return self$2946;
                 }
                 throw new TypeError('No match');
-            }.call(this, self$2914, f$2915);
+            }.call(this, self$2946, f$2947);
         }.curry()
     });
-    instance$2496(Monoid$2574, Either$2626, {
-        empty: function (self$2927) {
-            return Left$2627();
+    instance$2525(Monoid$2603, Either$2655, {
+        empty: function (self$2959) {
+            return Left$2656();
         }.curry(),
-        concat: function (a$2928, b$2929) {
-            return function (a0$2930, a1$2931) {
-                if (Either$2626.hasInstance ? Either$2626.hasInstance(a0$2930) : a0$2930 instanceof Either$2626) {
-                    var r0$2934 = Left$2627.unapply(a1$2931);
-                    if (r0$2934 != null && r0$2934.length === 1) {
-                        var x$2935 = r0$2934[0];
-                        return a$2928;
+        concat: function (a$2960, b$2961) {
+            return function (a0$2962, a1$2963) {
+                if (Either$2655.hasInstance ? Either$2655.hasInstance(a0$2962) : a0$2962 instanceof Either$2655) {
+                    var r0$2966 = Left$2656.unapply(a1$2963);
+                    if (r0$2966 != null && r0$2966.length === 1) {
+                        var x$2967 = r0$2966[0];
+                        return a$2960;
                     }
                 }
-                var r1$2932 = Left$2627.unapply(a0$2930);
-                if (r1$2932 != null && (r1$2932.length === 1 && (Either$2626.hasInstance ? Either$2626.hasInstance(a1$2931) : a1$2931 instanceof Either$2626))) {
-                    var x$2935 = r1$2932[0];
-                    return b$2929;
+                var r1$2964 = Left$2656.unapply(a0$2962);
+                if (r1$2964 != null && (r1$2964.length === 1 && (Either$2655.hasInstance ? Either$2655.hasInstance(a1$2963) : a1$2963 instanceof Either$2655))) {
+                    var x$2967 = r1$2964[0];
+                    return b$2961;
                 }
-                var r2$2933 = Right$2628.unapply(a0$2930);
-                if (r2$2933 != null && r2$2933.length === 1) {
-                    var r3$2936 = Right$2628.unapply(a1$2931);
-                    if (r3$2936 != null && r3$2936.length === 1) {
-                        var r1$2937 = r2$2933[0];
-                        var r2$2938 = r3$2936[0];
-                        return Right$2628(r1$2937.concat(r2$2938));
+                var r2$2965 = Right$2657.unapply(a0$2962);
+                if (r2$2965 != null && r2$2965.length === 1) {
+                    var r3$2968 = Right$2657.unapply(a1$2963);
+                    if (r3$2968 != null && r3$2968.length === 1) {
+                        var r1$2969 = r2$2965[0];
+                        var r2$2970 = r3$2968[0];
+                        return Right$2657(r1$2969.concat(r2$2970));
                     }
                 }
                 throw new TypeError('No match');
-            }.call(this, a$2928, b$2929);
+            }.call(this, a$2960, b$2961);
         }.curry()
     });
     // ***************************************************************
     // **                  CurryJS.Data.Collection                  **
     // ***************************************************************
     // foldl :: (a -> b -> a) -> a -> [b] -> a
-    function foldl$2630(f$2939, acc$2940, xs$2941) {
-        return function foldl$2630(f$2942, acc$2943, xs$2944) {
-            return xs$2944.reduce(f$2942, acc$2943);
+    function foldl$2659(f$2971, acc$2972, xs$2973) {
+        return function foldl$2659(f$2974, acc$2975, xs$2976) {
+            return xs$2976.reduce(f$2974, acc$2975);
         }.curry().apply(null, arguments);
     }
     ;
     // foldl1 :: (a -> a -> a) -> [a] -> a
-    function foldl1$2632(f$2945, xs$2946) {
-        return function foldl1$2632(f$2947, xs$2948) {
-            return xs$2948.reduce(f$2947);
+    function foldl1$2661(f$2977, xs$2978) {
+        return function foldl1$2661(f$2979, xs$2980) {
+            return xs$2980.reduce(f$2979);
         }.curry().apply(null, arguments);
     }
     ;
     // foldr :: (a -> b -> b) -> b -> [a] -> b
-    function foldr$2634(f$2949, acc$2950, xs$2951) {
-        return function foldr$2634(f$2952, acc$2953, xs$2954) {
-            return xs$2954.reduceRight(f$2952, acc$2953);
+    function foldr$2663(f$2981, acc$2982, xs$2983) {
+        return function foldr$2663(f$2984, acc$2985, xs$2986) {
+            return xs$2986.reduceRight(f$2984, acc$2985);
         }.curry().apply(null, arguments);
     }
     ;
     // foldr1 :: (a -> a -> a) -> [a] -> a
-    function foldr1$2636(f$2955, xs$2956) {
-        return function foldr1$2636(f$2957, xs$2958) {
-            return xs$2958.reduceRight(f$2957);
+    function foldr1$2665(f$2987, xs$2988) {
+        return function foldr1$2665(f$2989, xs$2990) {
+            return xs$2990.reduceRight(f$2989);
         }.curry().apply(null, arguments);
     }
     ;
     // flatten :: Monoid a => [a] -> a
-    function flatten$2639(xs$2959) {
-        return function flatten$2639(xs$2960) {
-            return foldl1$2632(function (xs$2961, ys$2962) {
-                return xs$2961.concat(ys$2962);
-            }.curry(), xs$2960);
+    function flatten$2668(xs$2991) {
+        return function flatten$2668(xs$2992) {
+            return foldl1$2661(function (xs$2993, ys$2994) {
+                return xs$2993.concat(ys$2994);
+            }.curry(), xs$2992);
         }.curry().apply(null, arguments);
     }
     ;
     // ***************************************************************
     // **                    CurryJS.Data.Array                     **
     // ***************************************************************
-    extendNative$2488(Array, 'of', function (self$2963, x$2964) {
-        return [x$2964];
+    extendNative$2517(Array, 'of', function (self$2995, x$2996) {
+        return [x$2996];
     }.curry());
-    extendNative$2488(Array.prototype, 'ap', function (self$2965, x$2966) {
-        return this.chain(map$2562(__$2487, x$2966).bind(this));
+    extendNative$2517(Array.prototype, 'ap', function (self$2997, x$2998) {
+        return this.chain(map$2591(__$2516, x$2998).bind(this));
     }.curry());
-    extendNative$2488(Array.prototype, 'chain', function (self$2967, f$2968) {
-        return function (x$2969) {
-            return flatten$2639(map$2562(f$2968)(x$2969));
+    extendNative$2517(Array.prototype, 'chain', function (self$2999, f$3000) {
+        return function (x$3001) {
+            return flatten$2668(map$2591(f$3000)(x$3001));
         }(this);
     }.curry());
     // ***************************************************************
     // **                   CurryJS.Data.Object                     **
     // ***************************************************************
-    var merge$2646 = function (a$2970, b$2971) {
-        var newObj$2972 = {}, k$2973;
-        for (k$2973 in b$2971) {
-            if (b$2971.hasOwnProperty(k$2973))
-                newObj$2972[k$2973] = b$2971[k$2973];
+    // merge :: Object -> Object -> Object
+    var merge$2675 = function (a$3002, b$3003) {
+        var newObj$3004 = {}, k$3005;
+        for (k$3005 in b$3003) {
+            if (b$3003.hasOwnProperty(k$3005))
+                newObj$3004[k$3005] = b$3003[k$3005];
         }
-        for (k$2973 in a$2970) {
-            if (a$2970.hasOwnProperty(k$2973))
-                newObj$2972[k$2973] = a$2970[k$2973];
+        for (k$3005 in a$3002) {
+            if (a$3002.hasOwnProperty(k$3005))
+                newObj$3004[k$3005] = a$3002[k$3005];
         }
-        return newObj$2972;
+        return newObj$3004;
     };
-    // extendNative(Object.prototype, "map", fun (self, f) -> 
-    //     foldl(fun (obj, k) -> merge(obj, k, f(self[k])), {}, Object.keys(self))
-    // )
+    // set :: Object -> String -> a
+    function set$2678(o$3006, k$3007, v$3008) {
+        return function set$2678(o$3009, k$3010, v$3011) {
+            return function () {
+                var newObj$3013 = {};
+                var foo$3015 = newObj$3013[k$3010] = v$3011;
+                return merge$2675(o$3009, newObj$3013);
+            }();
+        }.curry().apply(null, arguments);
+    }
+    ;
     module.exports = {
         Core: {
-            __: __$2487,
-            curry: curry$2490,
-            compose: compose$2491,
-            Protocol: Protocol$2493,
-            instance: instance$2496
+            __: __$2516,
+            curry: curry$2519,
+            compose: compose$2520,
+            Protocol: Protocol$2522,
+            instance: instance$2525
         },
         Predicates: {
-            not: not$2544,
-            and: and$2545,
-            or: or$2546,
-            isObject: isObject$2547,
-            isArray: isArray$2548,
-            isNumber: isNumber$2549,
-            isRegExp: isRegExp$2550,
-            isString: isString$2551,
-            isNull: isNull$2552,
-            isUndef: isUndef$2553,
-            exists: exists$2554
+            not: not$2573,
+            and: and$2574,
+            or: or$2575,
+            isObject: isObject$2576,
+            isArray: isArray$2577,
+            isNumber: isNumber$2578,
+            isRegExp: isRegExp$2579,
+            isString: isString$2580,
+            isNull: isNull$2581,
+            isUndef: isUndef$2582,
+            exists: exists$2583
         },
         Math: {
-            plus: plus$2555,
-            minus: minus$2556,
-            times: times$2557,
-            div: div$2558
+            plus: plus$2584,
+            minus: minus$2585,
+            times: times$2586,
+            div: div$2587
         },
         Number: {
             Sum: {
-                Sum: Sum$2580,
-                getSum: getSum$2589
+                Sum: Sum$2609,
+                getSum: getSum$2618
             },
             Product: {
-                Product: Product$2590,
-                getProduct: getProduct$2599
+                Product: Product$2619,
+                getProduct: getProduct$2628
             },
             Max: {
-                Max: Max$2600,
-                getMax: getMax$2609
+                Max: Max$2629,
+                getMax: getMax$2638
             },
             Min: {
-                Min: Min$2610,
-                getMin: getMin$2619
+                Min: Min$2639,
+                getMin: getMin$2648
             }
         },
         Data: {
             Either: {
-                Either: Either$2626,
-                Left: Left$2627,
-                Right: Right$2628
+                Either: Either$2655,
+                Left: Left$2656,
+                Right: Right$2657
             },
             Option: {
-                Option: Option$2620,
-                Some: Some$2621,
-                None: None$2622
+                Option: Option$2649,
+                Some: Some$2650,
+                None: None$2651
             },
             Collection: {
-                foldl: foldl$2630,
-                foldl1: foldl1$2632,
-                foldr: foldr$2634,
-                foldr1: foldr1$2636,
-                flatten: flatten$2639
+                foldl: foldl$2659,
+                foldl1: foldl1$2661,
+                foldr: foldr$2663,
+                foldr1: foldr1$2665,
+                flatten: flatten$2668
             },
-            Object: { merge: merge$2646 }
+            Object: {
+                merge: merge$2675,
+                set: set$2678
+            }
         },
         Control: {
-            Functor: { map: map$2562 },
-            Applicative: { ap: ap$2566 },
+            Functor: { map: map$2591 },
+            Applicative: { ap: ap$2595 },
             Monad: {
-                Monad: Monad$2568,
-                chain: chain$2570
+                Monad: Monad$2597,
+                chain: chain$2599
             },
             Monoid: {
-                Monoid: Monoid$2574,
-                concat: concat$2576
+                Monoid: Monoid$2603,
+                concat: concat$2605
             }
         }
     };

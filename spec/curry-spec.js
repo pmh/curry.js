@@ -623,7 +623,7 @@ describe "CurryJS.Data.Array" {
 }
 
 describe "CurryJS.Data.Object" {
-  { merge } := C.Data.Object;
+  { merge, set } := C.Data.Object;
 
   describe "merge :: Object -> Object -> Object" {
     it "merges two objects" {
@@ -632,6 +632,14 @@ describe "CurryJS.Data.Object" {
       }
       test "same keys" {
         merge({a: 'b'}, {a: 'd'}) =>= { a: 'b' }
+      }
+    }
+  }
+
+  describe "set :: Object -> String -> a" {
+    it "returns a new object with the new key present" {
+      test "set new key" {
+        set({a: 'b'}, 'c', 'd') =>= { a: 'b', c: 'd' }
       }
     }
   }
