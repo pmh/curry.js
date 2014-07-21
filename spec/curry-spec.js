@@ -250,7 +250,19 @@ describe "CurryJS.Math" {
 }
 
 describe "CurryJS.Function" {
-  { unary, binary, ternary } := C.Function;
+  { id, constant, unary, binary, ternary } := C.Function;
+
+  describe "id :: a -> a" {
+    it "returns it's argument unchanged" {
+      test "identity" { id(23) == 23 }
+    }
+  }
+
+  describe "constant :: a -> a" {
+    it "returns a new function that always returns the argument" {
+      test "constant" { constant(23)() == 23 }
+    }
+  }
 
   describe "unary :: Function -> (a -> b)" {
     it "it turns an n-arity function into a unary one" {
@@ -426,12 +438,11 @@ describe "CurryJS.Number.Min" {
 }
 
 describe "CurryJS.Data.Option" {
+  { id                 } := C.Function;
   { map                } := C.Control.Functor;
   { Option, Some, None } := C.Data.Option;
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
-    fun inc    (x) -> x + 1
-    fun id     (x) -> x
     fun inc    (x) -> x + 1
     fun square (x) -> x * x
 
@@ -447,8 +458,6 @@ describe "CurryJS.Data.Option" {
 
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
     fun comp (f) -> fun (g) -> fun (x) -> f(g(x))
-
-    fun id   (x)    -> x
     fun add  (a, b) -> a + b
     fun prod (a)    -> a * a
 
@@ -496,12 +505,11 @@ describe "CurryJS.Data.Option" {
 }
 
 describe "CurryJS.Data.Option" {
+  { id                  } := C.Function;
   { map                 } := C.Control.Functor;
   { Either, Left, Right } := C.Data.Either;
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
-    fun inc    (x) -> x + 1
-    fun id     (x) -> x
     fun inc    (x) -> x + 1
     fun square (x) -> x * x
 
@@ -517,8 +525,6 @@ describe "CurryJS.Data.Option" {
 
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
     fun comp (f) -> fun (g) -> fun (x) -> f(g(x))
-
-    fun id   (x)    -> x
     fun add  (a, b) -> a + b
     fun prod (a)    -> a * a
 
@@ -613,10 +619,10 @@ describe "CurryJS.Data.Collection" {
 }
 
 describe "CurryJS.Data.Array" {
+  { id } := C.Function;
+
   describe "ap :: Applicative f => f (a -> b) -> f a -> f b" {
     fun comp (f) -> fun (g) -> fun (x) -> f(g(x))
-
-    fun id   (x)    -> x
     fun add  (a, b) -> a + b
     fun prod (a)    -> a * a
 
