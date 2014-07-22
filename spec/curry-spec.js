@@ -480,17 +480,32 @@ describe "CurryJS.Data.Option" {
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
-    test "associativity" {
-      Some([1]).concat(Some([2])).concat(Some([3])) =>=
-        Some([1]).concat(Some([2]).concat(Some([3])))
+
+    it "returns it's first argument when the second argument is None" {
+      test "concat" { Some(1).concat(None) =>= Some(1) }
     }
 
-    test "right identity" {
-      Some([1]).concat(Option.empty()) =>= Some([1])
+    it "returns it's second argument when the first argument is None" {
+      test "concat" { None.concat(Some(1)) =>= Some(1) }
     }
 
-    test "left identity" {
-      Option.empty().concat(Some([1])) =>= Some([1])
+    it "concatenates the wrapped values and wraps them back up when both are Some" {
+      test "concat" { Some([1]).concat(Some([2])) =>= Some([1,2]) }
+    }
+
+    it "satisfies the laws" {
+      test "associativity" {
+        Some([1]).concat(Some([2])).concat(Some([3])) =>=
+          Some([1]).concat(Some([2]).concat(Some([3])))
+      }
+
+      test "right identity" {
+        Some([1]).concat(Option.empty()) =>= Some([1])
+      }
+
+      test "left identity" {
+        Option.empty().concat(Some([1])) =>= Some([1])
+      }
     }
   }
 
@@ -547,17 +562,31 @@ describe "CurryJS.Data.Either" {
   }
 
   describe "concat :: Monoid a => a -> a -> a" {
-    test "associativity" {
-      Right([1]).concat(Right([2])).concat(Right([3])) =>=
-        Right([1]).concat(Right([2]).concat(Right([3])))
+    it "returns it's first argument when the second argument is Left" {
+      test "concat" { Right(1).concat(Left(2)) =>= Right(1) }
     }
 
-    test "right identity" {
-      Right([1]).concat(Right([1]).empty()) =>= Right([1])
+    it "returns it's second argument when the first argument is Left" {
+      test "concat" { Left(2).concat(Right(1)) =>= Right(1) }
     }
 
-    test "left identity" {
-      Right([1]).empty().concat(Right([1])) =>= Right([1])
+    it "concatenates the wrapped values and wraps them back up when both are Right" {
+      test "concat" { Right([1]).concat(Right([2])) =>= Right([1,2]) }
+    }
+
+    it "satisfies the laws" {
+      test "associativity" {
+        Right([1]).concat(Right([2])).concat(Right([3])) =>=
+          Right([1]).concat(Right([2]).concat(Right([3])))
+      }
+
+      test "right identity" {
+        Right([1]).concat(Right([1]).empty()) =>= Right([1])
+      }
+
+      test "left identity" {
+        Right([1]).empty().concat(Right([1])) =>= Right([1])
+      }
     }
   }
 
