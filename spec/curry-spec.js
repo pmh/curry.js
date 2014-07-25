@@ -438,9 +438,9 @@ describe "CurryJS.Number.Min" {
 }
 
 describe "CurryJS.Data.Option" {
-  { id                 } := C.Function;
-  { map                } := C.Control.Functor;
-  { Option, Some, None } := C.Data.Option;
+  { id                                    } := C.Function;
+  { map                                   } := C.Control.Functor;
+  { Option, Some, None, maybe, fromOption } := C.Data.Option;
 
   describe "map :: Functor f => (a -> b) -> f a -> f b" {
     fun inc    (x) -> x + 1
@@ -515,6 +515,26 @@ describe "CurryJS.Data.Option" {
 
     test "associativity" {
       Some(2).chain(m_prod).chain(m_inc) =>= Some(2).chain(fun (x) -> m_prod(x).chain(m_inc) )
+    }
+  }
+
+  describe "maybe :: b -> (a -> b) -> Option a -> b" {
+    it "returns the default value if the option value is None" {
+      test "maybe" { maybe("Nothing", fun (x) -> x + "!!", None) =>= "Nothing" }
+    }
+
+    it "returns the result of applying to the value inside the Some if the option value is Some" {
+      test "maybe" { maybe("Nothing", fun (x) -> x + "!!", Some("foo")) =>= "foo!!" }
+    }
+  }
+
+  describe "fromOption :: a -> Option a -> a" {
+    it "returns the default value if the option value is None" {
+      test "fromOption" { fromOption("Nothing", None) =>= "Nothing" }
+    }
+
+    it "returns the value inside the Some if the option value is Some" {
+      test "fromOption" { fromOption("Nothing", Some("foo")) =>= "foo" }
     }
   }
 }
