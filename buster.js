@@ -2,6 +2,9 @@ var config = module.exports;
 
 config["CurryJS Test Suite"] = { rootPath    : "./"
                                , environment : "node"
-                               , sources     : [ "src/lib/curry.js"       ]
-                               , tests       : [ "src/spec/curry-spec.js" ]
+                               , sources     : [ "src/lib/**/*.js"
+                                               ]
+                               , tests       : [ 
+                                               , "src/spec/**/*.js"
+                                               ]
                                };
